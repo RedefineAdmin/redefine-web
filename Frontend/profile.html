@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>REDEFINE | Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── PURE DARK THEME VARIABLES ── */
+:root{
+  --p:#8b7cf8; --pd:#6d5ce8; --pr:rgba(139,124,248,0.18); --pg:rgba(139,124,248,0.08);
+  --bg:#0a0812; --bg2:rgba(14,11,26,0.97); --card:rgba(18,14,30,0.7);
+  --border:rgba(255,255,255,0.07); --borderf:rgba(139,124,248,0.4);
+  --t1:#f0eeff; --t2:#a09bbf; --t3:#6b6585;
+  --red:#f87171; --grn:#00ba7c; --ylw:#fbbf24; --cyan:#06b6d4; --pink:#f91880;
+  --twitter-blue: #1d9bf0;
+  --shadow-sm: 0 10px 30px rgba(0,0,0,0.3);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
+  --r:12px; --r2:18px; --r3:24px;
+  --font:'Sora',sans-serif;
+  --sw:260px; --sh:64px;
+}
+
+body{font-family:var(--font);background:var(--bg);color:var(--t1);overflow-x:hidden;min-height:100vh;font-size:14px; display:block !important;}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.hidden{display:none!important;}
+a{text-decoration:none;color:inherit;}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;top:0;left:0;width:var(--sw);height:100vh;background:var(--bg2);backdrop-filter:blur(24px);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transition:transform .35s cubic-bezier(.25,1,.35,1);}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-logo h1{font-size:1.35rem;font-weight:700;letter-spacing:1.5px;}
+.sb-logo span{color:var(--p);}
+.sb-close-btn{display:none;margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;padding:4px;}
+.sb-nav{flex:1;padding:20px 10px;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{display:none;}
+.sb-section{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;padding:10px 10px 5px;}
+.sb-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--r);cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;transition:all .18s;margin-bottom:2px;border:1px solid transparent;}
+.sb-item:hover{background:var(--pg);color:var(--t1);}
+.sb-item.active{background:var(--pr);border-color:rgba(139,124,248,0.25);color:var(--p);}
+.sb-item svg{width:16px;height:16px;flex-shrink:0;opacity:.8;}
+.sb-item.active svg{opacity:1;}
+.sb-profile{padding:12px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .18s;}
+.sb-profile:hover{background:var(--pg);}
+.sb-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.4);flex-shrink:0;}
+.sb-av img{width:100%;height:100%;object-fit:cover;display:none;}
+.sb-pname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; transition: color 0.3s;}
+.sb-prole{font-size:10px;color:var(--t3);}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:var(--sw);right:0;height:var(--sh);background:var(--card);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 24px;z-index:150;}
+.ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;}
+.ham span{display:block;width:20px;height:2px;background:var(--t2);border-radius:2px;transition:.25s;}
+.tb-search{flex:1;max-width:360px;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:30px;padding:0 14px;height:38px;transition:all .2s;}
+.tb-search:focus-within{border-color:var(--borderf);box-shadow:0 0 0 3px rgba(139,124,248,0.12);}
+.tb-search input{background:none;border:none;outline:none;flex:1;font-family:var(--font);font-size:13px;color:var(--t1);}
+.tb-search input::placeholder{color:var(--t3);}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+/* NOTIFICATION BADGES */
+.notif-dot{position:absolute;top:0px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--red);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;padding:0 4px; display: none;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px; display: none;}
+
+.tb-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:all .18s;position:relative;}
+.tb-btn:hover{background:var(--pg);color:var(--p);border-color:rgba(139,124,248,0.3);}
+.tb-profile{display:flex;align-items:center;gap:9px;cursor:pointer;padding:5px 12px;border-radius:30px;border:1px solid var(--border);background:rgba(255,255,255,0.02);transition:all .18s;position:relative;}
+.tb-profile:hover{background:var(--pg);border-color:rgba(139,124,248,0.25);}
+.tb-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.45);}
+.tb-av img{width:100%;height:100%;object-fit:cover;display:none;}
+.tb-uname{font-size:13px;font-weight:600; transition: color 0.3s;}
+
+/* Dropdown */
+.dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:210px;background:rgba(14,11,26,0.98);backdrop-filter:blur(24px);border:1px solid rgba(139,124,248,0.2);border-radius:var(--r2);box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-6px);transition:all .22s cubic-bezier(.25,1,.35,1);z-index:300;}
+.dropdown.open{opacity:1;pointer-events:auto;transform:translateY(0);}
+.dd-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.dd-name{font-size:13.5px;font-weight:600;}
+.dd-email{font-size:11px;color:var(--t3);margin-top:2px;}
+.dd-item{display:flex;align-items:center;gap:11px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);transition:all .15s;}
+.dd-item:hover{background:var(--pg);color:var(--t1);}
+.dd-item.danger{color:var(--red);}
+.dd-item.danger:hover{background:rgba(248,113,113,0.08);}
+.dd-sep{height:1px;background:var(--border);margin:3px 0;}
+
+/* ── MAIN PROFILE PAGE ── */
+.main{margin-left:var(--sw);padding-top:var(--sh);min-height:100vh;position:relative;z-index:1;}
+.overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);}
+.profile-container {max-width: 950px;margin: 0 auto;padding: 40px 20px;}
+
+/* Cover & Avatar Header */
+.profile-header-card {background: var(--card);border: 1px solid var(--border);border-radius: var(--r3);overflow: hidden;margin-bottom: 25px;box-shadow: var(--shadow-sm);}
+.cover-photo {height: 160px;background: linear-gradient(135deg, rgba(139,124,248,0.4), rgba(52,211,153,0.2)), url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2000&auto=format&fit=crop') center/cover;position: relative;}
+.cover-edit-btn {position: absolute;top: 15px; right: 15px;background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);color: white; border: 1px solid rgba(255,255,255,0.2);padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; font-family: var(--font);cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px;}
+.cover-edit-btn:hover {background: rgba(0,0,0,0.8); border-color: white;}
+.profile-header-body {padding: 0 25px 25px;position: relative;}
+.header-top-row {display: flex;justify-content: space-between;align-items: flex-end;margin-bottom: 15px;}
+.av-wrapper {position: relative;margin-top: -60px;}
+.av-huge {width: 120px; height: 120px;border-radius: 50%;background: linear-gradient(135deg, var(--p), #b06aff);border: 5px solid #0a0812; display: flex; align-items: center; justify-content: center;font-size: 40px; font-weight: 700; color: #fff;overflow: hidden; position: relative; cursor: pointer;box-shadow: 0 5px 15px rgba(0,0,0,0.5);transition: transform 0.3s ease;}
+.av-huge:hover {transform: scale(1.03);}
+.av-huge img {width: 100%; height: 100%; object-fit: cover; display: none;}
+.av-over {position: absolute; inset: 0; border-radius: 50%;background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;opacity: 0; transition: 0.2s;}
+.av-huge:hover .av-over {opacity: 1;}
+.btn-edit-profile {background: transparent; color: var(--t1); border: 1px solid var(--borderf);padding: 8px 20px; border-radius: 30px; font-weight: 700; font-family: var(--font);cursor: pointer; transition: 0.2s; font-size: 14px; margin-bottom: 10px;}
+.btn-edit-profile:hover {background: rgba(255,255,255,0.05);}
+
+.header-user-text {margin-bottom: 10px;}
+.header-user-text h2 {font-size: 1.6rem; font-weight: 700; color: var(--t1); margin-bottom: 0;}
+.header-user-text p {font-size: 14.5px; color: var(--t3); margin-top: 2px;}
+.header-bio {font-size: 15px; color: var(--t1); line-height: 1.5; margin-bottom: 15px; max-width: 700px;}
+.header-stats {display: flex; gap: 20px; font-size: 14.5px; color: var(--t3); margin-bottom: 18px;}
+.header-stats strong {color: var(--t1); font-weight: 700;}
+.profile-badges {display: flex; gap: 10px;}
+.badge {padding: 5px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 700; background: rgba(255,255,255,0.05); color: var(--t2); border: 1px solid var(--border);}
+.badge.elite {background: rgba(251,191,36,0.15); color: var(--ylw); border-color: rgba(251,191,36,0.3);}
+
+/* Tabs & Panels */
+.profile-tab-bar {position: relative;display: flex;background: transparent;border-bottom: 1px solid var(--border);margin-bottom: 25px;}
+.profile-tab {flex: 1; height: 50px; background: transparent; border: none;font-family: var(--font); font-size: 14.5px; font-weight: 600;color: var(--t3); cursor: pointer; position: relative; z-index: 1;transition: color 0.2s;}
+.profile-tab:hover {background: rgba(255,255,255,0.03);}
+.profile-tab.active {color: var(--t1);}
+.profile-tab.active::after {content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);width: 50px; height: 4px; background: var(--p); border-radius: 4px 4px 0 0;}
+.profile-panel {display: none; animation: panelIn 0.3s ease both;}
+.profile-panel.active {display: block;}
+@keyframes panelIn {from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); }}
+
+/* Feed & Tweets */
+.feed-box {background: var(--card); border: 1px solid var(--border); border-radius: var(--r3); overflow: hidden; box-shadow: var(--shadow-sm);}
+.empty-feed {padding: 60px 20px; text-align: center; color: var(--t3); font-size: 16px;}
+.tweet {display: flex; gap: 15px; padding: 20px 25px; border-bottom: 1px solid var(--border); transition: background 0.2s; cursor: pointer; position: relative;}
+.tweet:last-child {border-bottom: none;}
+.tweet:hover {background: var(--pg);}
+.tweet-av {width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 18px;}
+.tweet-content {flex: 1; min-width: 0;}
+.tweet-header-row {display: flex; justify-content: space-between; align-items: flex-start;}
+.tweet-header-info {display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;}
+.tweet-name {font-weight: 700; color: var(--t1); font-size: 15px;}
+.tweet-verified {color: var(--twitter-blue); display: flex; align-items: center; margin-top: 2px;}
+.tweet-handle, .tweet-time {color: var(--t3); font-size: 14px;}
+
+.tweet-more {color: var(--t3); cursor: pointer; padding: 4px; border-radius: 50%; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center;}
+.tweet-more:hover {color: var(--twitter-blue); background: rgba(29, 155, 240, 0.1);}
+.tweet-menu {position: absolute; right: 0; top: 100%; background: var(--bg2); border: 1px solid var(--borderf); border-radius: var(--r); box-shadow: var(--shadow-sm); overflow: hidden; opacity: 0; pointer-events: none; transform: translateY(-5px); transition: 0.2s; z-index: 100; min-width: 140px; backdrop-filter: blur(10px);}
+.tweet-menu.open {opacity: 1; pointer-events: auto; transform: translateY(0);}
+.tm-item {padding: 10px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--t1); font-size: 13px; font-weight: 600;}
+.tm-item:hover {background: var(--pg);}
+.tm-item.danger {color: var(--red);}
+.tm-item.danger:hover {background: rgba(248, 113, 113, 0.1);}
+
+.tweet-text {color: var(--t1); font-size: 15px; line-height: 1.5; margin-bottom: 12px; word-wrap: break-word;}
+.tweet-actions {display: flex; justify-content: space-between; max-width: 425px; color: var(--t3); margin-top: 10px;}
+.t-action {display: flex; align-items: center; gap: 8px; font-size: 13px; transition: 0.2s; cursor: pointer; user-select: none;}
+.t-action svg {width: 18px; height: 18px; transition: 0.2s; border-radius: 50%; padding: 2px; box-sizing: content-box;}
+.t-action:hover {color: var(--p);}
+.t-action:hover svg {background: rgba(139,124,248, 0.1);}
+.t-action.rt:hover, .t-action.rt.active {color: var(--grn);}
+.t-action.rt:hover svg {background: rgba(0, 186, 124, 0.1);}
+.t-action.like:hover, .t-action.like.active {color: var(--pink);}
+.t-action.like:hover svg {background: rgba(249, 24, 128, 0.1);}
+.t-action.like.active svg {fill: var(--pink); stroke: var(--pink);}
+
+/* Forms */
+.settings-box {background: var(--card); border: 1px solid var(--border); border-radius: var(--r3); padding: 35px; box-shadow: var(--shadow-sm); margin-bottom: 30px;}
+.form-section {margin-bottom: 30px;}
+.form-section h3 {font-size: 1.2rem; font-weight: 700; color: var(--t1); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border);}
+.mfield {margin-bottom: 20px;}
+.mfield label {display: block; font-size: 11px; font-weight: 600; color: var(--t2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;}
+.mfield input, .mfield select, .mfield textarea {width: 100%; height: 46px; padding: 0 16px; background: var(--pg); border: 1px solid var(--border); border-radius: var(--r); color: var(--t1); font-family: var(--font); font-size: 14px; outline: none; transition: 0.2s;}
+.mfield textarea {height: 90px; padding: 12px 16px; resize: vertical; line-height: 1.6;}
+.mfield input:focus, .mfield select:focus, .mfield textarea:focus {border-color: var(--borderf); box-shadow: 0 0 0 3px rgba(139,124,248,0.1); background: var(--pr);}
+.mfield select option {background: #0e0b1a;}
+.mrow {display: grid; grid-template-columns: 1fr 1fr; gap: 20px;}
+.un-wrap {position: relative; display: flex; align-items: center; height: 46px; background: var(--pg); border: 1px solid var(--border); border-radius: var(--r); transition: 0.2s;}
+.un-wrap:focus-within {border-color: var(--borderf); box-shadow: 0 0 0 3px rgba(139,124,248,0.1); background: var(--pr);}
+.un-at {padding: 0 0 0 16px; color: var(--p); font-weight: 600; font-size: 15px; flex-shrink: 0;}
+.un-wrap input {border: none !important; background: none !important; box-shadow: none !important; height: 100%; flex: 1; padding: 0 16px 0 6px;}
+.save-btn-container {display: flex; justify-content: flex-end; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);}
+.save-btn {background: var(--p); color: #fff; border: none; border-radius: 30px; font-family: var(--font); font-weight: 700; font-size: 15px; padding: 12px 35px; cursor: pointer; transition: 0.2s; box-shadow: 0 8px 24px rgba(139,124,248,0.35);}
+.save-btn:hover {background: var(--pd); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(139,124,248,0.5);}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:9999;background:var(--bg2);border:1px solid rgba(52,211,153,.35);border-radius:30px;padding:12px 24px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:all .3s;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast-icon{color:var(--grn);}
+
+@media(max-width:720px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .overlay{display:block;}
+  .topbar{left:0;}
+  .main{margin-left:0;}
+  .ham{display:flex;}
+  .mrow {grid-template-columns: 1fr; gap: 0;}
+  .tb-uname{display:none;}
+  .header-top-row {flex-direction: column; align-items: center; gap: 15px;}
+  .profile-header-body {text-align: center;}
+  .header-stats {justify-content: center;}
+  .profile-badges {justify-content: center;}
+  .header-user-text {display: flex; flex-direction: column; align-items: center;}
+}
+</style>
+</head>
+<body onclick="closeAllTweetMenus()">
+
+<canvas id="bg-canvas"></canvas>
+<div class="overlay" id="sb-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo"><h1>RE<span>DEFINE</span></h1><button class="sb-close-btn" id="sb-close">✕</button></div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main Menu</div>
+    <a href="home.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Home</a>
+    <a href="dashboard.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Study Hub</a>
+    <a href="community.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Community</a>
+    <a href="inbox.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Inbox <span class="nav-badge">0</span></a>
+    <a href="about.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> About Us</a>
+    <div class="sb-section" style="margin-top: 20px;">Account</div> 
+    <a href="profile.html" class="sb-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</a>
+    <a href="subscription.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription</a>
+    <a href="index.html" class="sb-item" style="color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</a>
+  </nav>
+  <div class="sb-profile" id="sb-profile-bottom">
+    <div class="sb-av" id="sb-av-disp"><span id="sb-av-letter">P</span></div>
+    <div><div class="sb-pname" id="sb-pname">User</div><div class="sb-prole" id="sb-prole">Plan</div></div>
+  </div>
+</aside>
+
+<header class="topbar">
+  <button class="ham" id="ham"><span></span><span></span><span></span></button>
+  <div class="tb-search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search across REDEFINE..."/></div>
+  <div class="tb-right">
+    <div class="tb-btn" onclick="location.href='inbox.html'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot">0</div></div>
+    <div class="tb-profile" id="tb-profile-btn">
+      <div class="tb-av" id="tb-av-disp2"><span id="tb-av-letter2">P</span></div>
+      <span class="tb-uname" id="tb-uname">User</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="dropdown" id="profile-dd">
+        <div class="dd-head"><div class="dd-name" id="dd-name">User</div><div class="dd-email" id="dd-email">email@example.com</div></div>
+        <div class="dd-item" onclick="location.href='profile.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile</div>
+        <div class="dd-item" onclick="location.href='subscription.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription</div>
+        <div class="dd-sep"></div>
+        <div class="dd-item danger" onclick="location.href='index.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="profile-container">
+
+    <div class="profile-header-card">
+      <div class="cover-photo">
+        <button class="cover-edit-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Edit Cover</button>
+      </div>
+      <div class="profile-header-body">
+        <div class="header-top-row">
+          <div class="av-wrapper">
+            <div class="av-huge" id="av-big" onclick="document.getElementById('av-file').click()">
+              <span id="av-letter">P</span>
+              <img id="av-img" src="" alt=""/>
+              <div class="av-over"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+            </div>
+            <input type="file" id="av-file" accept="image/*" style="display:none;"/>
+          </div>
+          <button class="btn-edit-profile" onclick="document.querySelector('[data-target=\'panel-settings\']').click();">Edit Profile</button>
+        </div>
+        <div class="header-user-text">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+            <h2 id="display-fname" style="margin-bottom: 0;">Prince Kumar</h2>
+            <span id="header-verified" style="color: var(--twitter-blue); display: none; margin-top: 2px;" title="Verified Student"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>
+          </div>
+          <p id="display-handle">@prince</p>
+        </div>
+        <div class="header-bio" id="display-bio">Passionate learner 🚀 Aspiring Computer Engineer.</div>
+        <div class="header-stats">
+          <span><strong id="display-following">124</strong> Following</span>
+          <span><strong id="display-followers">1,042</strong> Followers</span>
+        </div>
+        <div class="profile-badges" style="margin-top: 15px;">
+          <div class="badge">Joined April 2026</div>
+          <div class="badge" id="display-badge">Free Plan</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-tab-bar">
+      <button class="profile-tab active" data-target="panel-posts">Posts</button>
+      <button class="profile-tab" data-target="panel-academic">Academic Info</button>
+      <button class="profile-tab" data-target="panel-settings">Account Details</button>
+    </div>
+
+    <div class="profile-panel active" id="panel-posts">
+      <div class="feed-box" id="profile-tweets-container"></div>
+    </div>
+
+    <div class="profile-panel" id="panel-academic">
+      <div class="settings-box">
+        <div class="form-section" style="margin-bottom:0;">
+          <h3>Academic Info</h3>
+          <div class="mrow">
+            <div class="mfield">
+              <label>Current Class & Stream</label>
+              <select id="pf-class"><option>Class 9</option><option>Class 10</option><option>Class 11 – Science</option><option selected>Class 12 – PCM & CS</option></select>
+            </div>
+            <div class="mfield">
+              <label>Primary Goal</label>
+              <select id="pf-goal"><option>Score 90%+ in Boards</option><option selected>Engineering (B.Tech / BCA)</option><option>Government Exams</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="save-btn-container"><button class="save-btn" onclick="saveProfile()">Save Changes</button></div>
+      </div>
+    </div>
+
+    <div class="profile-panel" id="panel-settings">
+      <div class="settings-box">
+        <div class="form-section">
+          <h3>Personal Details</h3>
+          <div class="mrow">
+            <div class="mfield"><label>First Name</label><input type="text" id="pf-fname" value=""/></div>
+            <div class="mfield"><label>Last Name</label><input type="text" id="pf-lname" value=""/></div>
+          </div>
+          <div class="mfield">
+            <label>Username</label>
+            <div class="un-wrap"><span class="un-at">@</span><input type="text" id="pf-username" value="" placeholder="yourname"/></div>
+          </div>
+          <div class="mrow">
+            <div class="mfield"><label>Email Address</label><input type="email" id="pf-email" value=""/></div>
+            <div class="mfield"><label>Phone Number</label><input type="tel" id="pf-phone" value=""/></div>
+          </div>
+          <div class="mfield"><label>Bio</label><textarea id="pf-bio" placeholder="Write a short bio...">Passionate learner 🚀 Aspiring Computer Engineer.</textarea></div>
+        </div>
+        <div class="form-section" style="margin-bottom:0;">
+          <h3>Account Security</h3>
+          <div class="mfield"><label>Current Password</label><input type="password" placeholder="••••••••"/></div>
+          <div class="mrow">
+            <div class="mfield"><label>New Password</label><input type="password" placeholder="New Password"/></div>
+            <div class="mfield"><label>Confirm New Password</label><input type="password" placeholder="Confirm Password"/></div>
+          </div>
+        </div>
+        <div class="save-btn-container"><button class="save-btn" onclick="saveProfile()">Save All Changes</button></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"><svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span class="toast-msg" id="toast-msg">Success!</span></div>
+
+<script>
+// Canvas BG
+(function(){var c=document.getElementById('bg-canvas'),ctx=c.getContext('2d'),W,H;function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}window.addEventListener('resize',resize);resize();var PAL=[[139,124,248],[109,92,232],[180,90,240],[80,140,255]];function Orb(){this.init();}Orb.prototype.init=function(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=100+Math.random()*220;this.vx=(Math.random()-.5)*.15;this.vy=(Math.random()-.5)*.15;this.c=PAL[Math.floor(Math.random()*PAL.length)];this.a=.04+Math.random()*.07;};Orb.prototype.update=function(t){this.x+=this.vx;this.y+=this.vy;if(this.x<-this.r||this.x>W+this.r||this.y<-this.r||this.y>H+this.r)this.init();};Orb.prototype.draw=function(){var g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);g.addColorStop(0,'rgba('+this.c+','+this.a+')');g.addColorStop(1,'rgba('+this.c+',0)');ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();};var orbs=[];for(var i=0;i<10;i++){var o=new Orb();o.x=Math.random()*W;o.y=Math.random()*H;orbs.push(o);}function drawGrid(){ctx.save();ctx.strokeStyle='rgba(139,124,248,.035)';ctx.lineWidth=1;for(var x=0;x<W;x+=56){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(var y=0;y<H;y+=56){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}ctx.restore();}var t=0;function loop(){t++;ctx.clearRect(0,0,W,H);ctx.fillStyle='#0a0812';ctx.fillRect(0,0,W,H);drawGrid();orbs.forEach(function(o){o.update(t);o.draw();});requestAnimationFrame(loop);}loop();})();
+
+// UI Logic
+document.getElementById('ham').addEventListener('click', () => {document.querySelector('.sidebar').style.transform = 'translateX(0)';document.getElementById('sb-overlay').style.display='block';});
+document.getElementById('sb-overlay').addEventListener('click', () => {document.querySelector('.sidebar').style.transform = 'translateX(-100%)';document.getElementById('sb-overlay').style.display='none';});
+var ddOpen = false;var dd = document.getElementById('profile-dd');
+document.getElementById('tb-profile-btn').addEventListener('click', (e) => { e.stopPropagation(); ddOpen ? (dd.classList.remove('open'),ddOpen=false) : (dd.classList.add('open'),ddOpen=true); });
+
+window.closeAllTweetMenus = () => { document.querySelectorAll('.tweet-menu').forEach(m => m.classList.remove('open')); };
+document.addEventListener('click', () => { if(ddOpen){dd.classList.remove('open');ddOpen=false;} closeAllTweetMenus(); });
+
+document.getElementById('av-file').addEventListener('change', function(){
+  var file=this.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var src=e.target.result;
+    document.getElementById('av-img').src = src; document.getElementById('av-img').style.display = 'block'; document.getElementById('av-letter').style.display = 'none';
+    if(document.getElementById('tb-av-img2')) { document.getElementById('tb-av-img2').src = src; document.getElementById('tb-av-img2').style.display = 'block'; }
+    if(document.getElementById('tb-av-letter2')) document.getElementById('tb-av-letter2').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+var pTabs = document.querySelectorAll('.profile-tab');
+var pPanels = document.querySelectorAll('.profile-panel');
+pTabs.forEach(function (tab) {
+  tab.addEventListener('click', function () {
+    pTabs.forEach(t => t.classList.remove('active')); pPanels.forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    var target = document.getElementById(this.getAttribute('data-target')); if (target) target.classList.add('active');
+  });
+});
+
+function showToast(msg, err=false){
+  var t=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
+  t.style.borderColor=err?'rgba(248,113,113,.35)':'rgba(52,211,153,.35)'; t.querySelector('.toast-icon').style.color=err?'#f87171':'#34d399';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ── NOTIFICATION SYNC ──
+let notifCount = localStorage.getItem('redefine_notif_count');
+if (notifCount === null) { notifCount = "3"; localStorage.setItem('redefine_notif_count', notifCount); }
+function updateNotifBadges() {
+    const count = parseInt(localStorage.getItem('redefine_notif_count') || "0");
+    document.querySelectorAll('.notif-dot').forEach(el => {
+        if(count > 0) { el.style.display = 'flex'; el.textContent = count > 9 ? '9+' : count; }
+        else { el.style.display = 'none'; }
+    });
+    document.querySelectorAll('.nav-badge').forEach(el => {
+        if(count > 0) { el.style.display = 'inline-block'; el.textContent = count > 9 ? '9+' : count; }
+        else { el.style.display = 'none'; }
+    });
+}
+updateNotifBadges();
+
+// ── DB & PROFILE INJECTION ──
+let currentUser = null;
+let allTweets = [];
+const API_URL = 'http://127.0.0.1:3000/api';
+
+document.addEventListener("DOMContentLoaded", () => {
+    const userData = localStorage.getItem("redefine_user");
+    if (!userData) { window.location.href = "index.html"; return; }
+    
+    currentUser = JSON.parse(userData);
+    const firstName = currentUser.name.split(' ')[0];
+    const lastName = currentUser.name.split(' ').slice(1).join(' '); 
+    const initial = firstName.charAt(0).toUpperCase();
+    const userPlan = currentUser.plan || "Free";
+
+    function formatNumber(num) { return num >= 1000 ? (num / 1000).toFixed(1) + 'K' : num; }
+    
+    document.getElementById("display-followers").textContent = formatNumber(currentUser.followers || 0);
+    document.getElementById("display-following").textContent = formatNumber(currentUser.following || 0);
+
+    document.getElementById("display-fname").textContent = currentUser.name;
+    document.getElementById("display-handle").textContent = "@" + currentUser.username;
+    document.getElementById("av-letter").textContent = initial;
+    document.getElementById("sb-pname").textContent = currentUser.name;
+    document.getElementById("sb-av-letter").textContent = initial;
+    document.getElementById("sb-prole").textContent = `${userPlan} Plan`;
+    document.getElementById("tb-uname").textContent = firstName;
+    document.getElementById("tb-av-letter2").textContent = initial;
+    document.getElementById("dd-name").textContent = currentUser.name;
+    document.getElementById("dd-email").textContent = currentUser.email;
+
+    const displayBadge = document.getElementById("display-badge");
+    if(displayBadge) {
+        displayBadge.textContent = `${userPlan} Plan`;
+        if (userPlan === 'Elite') { displayBadge.className = 'badge elite'; } 
+    }
+
+    if (userPlan === 'Elite' || userPlan === 'Pro') {
+        document.getElementById("header-verified").style.display = "flex";
+        if(userPlan === 'Elite') {
+            document.getElementById("sb-pname").style.color = 'var(--ylw)';
+            document.getElementById("tb-uname").style.color = 'var(--ylw)';
+            document.getElementById("display-fname").style.color = 'var(--ylw)';
+        }
+    }
+
+    document.getElementById("pf-fname").value = firstName;
+    if(lastName) document.getElementById("pf-lname").value = lastName;
+    document.getElementById("pf-email").value = currentUser.email;
+    document.getElementById("pf-username").value = currentUser.username;
+
+    // Fetch DB
+    const container = document.getElementById('profile-tweets-container');
+
+    async function loadFeed() {
+        try {
+            const res = await fetch(`${API_URL}/tweets`);
+            const data = await res.json();
+            if (data.success) { allTweets = data.tweets; renderFeed(); }
+        } catch(e) { console.error(e); }
+    }
+
+    window.renderFeed = function() {
+        const myTweets = allTweets.filter(t => t.username === currentUser.username);
+        if (myTweets.length === 0) {
+            container.innerHTML = `<div class="empty-feed">You haven't posted any doubts or updates yet!</div>`;
+        } else {
+            container.innerHTML = "";
+            myTweets.forEach(tweet => {
+                const tick = tweet.verified ? `<span class="tweet-verified" style="margin-left:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>` : '';
+                const menuHTML = `<div class="tm-item danger" onclick="deleteTweet(${tweet.id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg> Delete post</div>`;
+
+                const html = `
+                <div class="tweet" id="t-${tweet.id}">
+                  <div class="tweet-av" style="background:${tweet.color};">${tweet.avatar}</div>
+                  <div class="tweet-content">
+                      <div class="tweet-header-row">
+                          <div class="tweet-header-info">
+                              <span class="tweet-name">${tweet.name}</span>${tick}
+                              <span class="tweet-handle">@${tweet.username}</span>
+                              <span class="tweet-time">· ${tweet.time}</span>
+                          </div>
+                          <div class="tweet-more" onclick="toggleTweetMenu(event, ${tweet.id})">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                              <div class="tweet-menu" id="menu-${tweet.id}">${menuHTML}</div>
+                          </div>
+                      </div>
+                      <div class="tweet-text">${tweet.text}</div>
+                      <div class="tweet-actions">
+                          <div class="t-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> ${tweet.replies}</div>
+                          <div class="t-action rt ${tweet.hasRT ? 'active' : ''}" onclick="toggleRT(${tweet.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg> ${tweet.rt}</div>
+                          <div class="t-action like ${tweet.hasLiked ? 'active' : ''}" onclick="toggleLike(${tweet.id})"><svg viewBox="0 0 24 24" fill="${tweet.hasLiked ? 'var(--pink)' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${tweet.likes}</div>
+                          <div class="t-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ${tweet.views}</div>
+                      </div>
+                  </div>
+                </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+    };
+    
+    window.toggleTweetMenu = function(e, id) { e.stopPropagation(); closeAllTweetMenus(); document.getElementById(`menu-${id}`).classList.toggle('open'); };
+    window.deleteTweet = async function(id) { await fetch(`${API_URL}/tweets/${id}`, { method: 'DELETE' }); await loadFeed(); };
+    window.toggleLike = async function(id) { const t = allTweets.find(t => t.id === id); if(t) { t.hasLiked = !t.hasLiked; t.likes += t.hasLiked ? 1 : -1; renderFeed(); await fetch(`${API_URL}/tweets/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: t.hasLiked }) }); } };
+    window.toggleRT = async function(id) { const t = allTweets.find(t => t.id === id); if(t) { t.hasRT = !t.hasRT; t.rt += t.hasRT ? 1 : -1; renderFeed(); await fetch(`${API_URL}/tweets/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: t.hasRT }) }); } };
+
+    loadFeed();
+});
+
+window.saveProfile = function() {
+  var fname = document.getElementById('pf-fname'); var lname = document.getElementById('pf-lname');
+  var uname = document.getElementById('pf-username'); var bio = document.getElementById('pf-bio');
+  if (fname && !fname.value.trim()){ showToast('First name is required!', true); return; }
+  
+  if (fname) {
+    var firstName = fname.value.trim(); var lastName = lname.value.trim(); var fullName = firstName + (lastName ? ' ' + lastName : '');
+    var handle = uname.value.trim() ? uname.value.trim() : firstName.toLowerCase();
+    
+    document.getElementById('tb-uname').textContent = firstName;
+    document.getElementById('dd-name').textContent = fullName;
+    document.getElementById('display-fname').textContent = fullName;
+    document.getElementById('display-handle').textContent = '@' + handle;
+
+    const userData = JSON.parse(localStorage.getItem("redefine_user"));
+    userData.name = fullName; userData.username = handle; localStorage.setItem("redefine_user", JSON.stringify(userData));
+    
+    currentUser.name = fullName; currentUser.username = handle;
+    if(typeof renderFeed === 'function') renderFeed(); 
+  }
+  showToast('Settings saved successfully!');
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>REDEFINE | Inbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── PURE DARK THEME VARIABLES ── */
+:root{
+  --p:#8b7cf8; --pd:#6d5ce8; --pr:rgba(139,124,248,0.18); --pg:rgba(139,124,248,0.08);
+  --bg:#0a0812; --bg2:rgba(14,11,26,0.97); --card:rgba(18,14,30,0.7);
+  --border:rgba(255,255,255,0.07); --borderf:rgba(139,124,248,0.4);
+  --t1:#f0eeff; --t2:#a09bbf; --t3:#6b6585;
+  --red:#f87171; --grn:#00ba7c; --ylw:#fbbf24; --cyan:#06b6d4; --pink:#f91880;
+  --twitter-blue: #1d9bf0;
+  --shadow-sm: 0 10px 30px rgba(0,0,0,0.3);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
+  --r:12px; --r2:18px; --r3:24px;
+  --font:'Sora',sans-serif;
+  --sw:260px; --sh:64px;
+}
+
+body{font-family:var(--font);background:var(--bg);color:var(--t1);overflow-x:hidden;min-height:100vh;font-size:14px; display:block !important;}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+a{text-decoration:none;color:inherit;}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;top:0;left:0;width:var(--sw);height:100vh;background:var(--bg2);backdrop-filter:blur(24px);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transition:transform .35s cubic-bezier(.25,1,.35,1);}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-logo h1{font-size:1.35rem;font-weight:700;letter-spacing:1.5px;}
+.sb-logo span{color:var(--p);}
+.sb-close-btn{display:none;margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;padding:4px;}
+.sb-nav{flex:1;padding:20px 10px;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{display:none;}
+.sb-section{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;padding:10px 10px 5px;}
+.sb-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--r);cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;transition:all .18s;margin-bottom:2px;border:1px solid transparent;}
+.sb-item:hover{background:var(--pg);color:var(--t1);}
+.sb-item.active{background:var(--pr);border-color:rgba(139,124,248,0.25);color:var(--p);}
+.sb-item svg{width:16px;height:16px;flex-shrink:0;opacity:.8;}
+.sb-item.active svg{opacity:1;}
+.sb-profile{padding:12px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .18s;}
+.sb-profile:hover{background:var(--pg);}
+.sb-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.4);flex-shrink:0;}
+.sb-pname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; transition: color 0.3s;}
+.sb-prole{font-size:10px;color:var(--t3);}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:var(--sw);right:0;height:var(--sh);background:var(--card);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 24px;z-index:150;}
+.ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;}
+.ham span{display:block;width:20px;height:2px;background:var(--t2);border-radius:2px;transition:.25s;}
+.tb-search{flex:1;max-width:360px;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:30px;padding:0 14px;height:38px;transition:all .2s;}
+.tb-search:focus-within{border-color:var(--borderf);box-shadow:0 0 0 3px rgba(139,124,248,0.12);}
+.tb-search input{background:none;border:none;outline:none;flex:1;font-family:var(--font);font-size:13px;color:var(--t1);}
+.tb-search input::placeholder{color:var(--t3);}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+/* NOTIFICATION BADGES */
+.notif-dot{position:absolute;top:0px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--red);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;padding:0 4px;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+
+.tb-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:all .18s;position:relative;}
+.tb-btn:hover{background:var(--pg);color:var(--p);border-color:rgba(139,124,248,0.3);}
+
+.tb-profile{display:flex;align-items:center;gap:9px;cursor:pointer;padding:5px 12px;border-radius:30px;border:1px solid var(--border);background:rgba(255,255,255,0.02);transition:all .18s;position:relative;}
+.tb-profile:hover{background:var(--pg);border-color:rgba(139,124,248,0.25);}
+.tb-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.45);}
+.tb-uname{font-size:13px;font-weight:600; transition: color 0.3s;}
+
+/* Dropdown */
+.dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:210px;background:rgba(14,11,26,0.98);backdrop-filter:blur(24px);border:1px solid rgba(139,124,248,0.2);border-radius:var(--r2);box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-6px);transition:all .22s cubic-bezier(.25,1,.35,1);z-index:300;}
+.dropdown.open{opacity:1;pointer-events:auto;transform:translateY(0);}
+.dd-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.dd-name{font-size:13.5px;font-weight:600;}
+.dd-email{font-size:11px;color:var(--t3);margin-top:2px;}
+.dd-item{display:flex;align-items:center;gap:11px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);transition:all .15s;}
+.dd-item:hover{background:var(--pg);color:var(--t1);}
+.dd-item.danger{color:var(--red);}
+.dd-item.danger:hover{background:rgba(248,113,113,0.08);}
+.dd-sep{height:1px;background:var(--border);margin:3px 0;}
+
+/* ── INBOX LAYOUT ── */
+.main{
+  margin-left:var(--sw);
+  padding-top: calc(var(--sh) + 30px);
+  min-height:100vh;
+  position:relative;
+  z-index:1;
+}
+.overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);}
+
+.inbox-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px 50px;
+}
+
+.inbox-card {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sticky Header & Tabs */
+.inbox-header {
+  position: sticky;
+  top: var(--sh);
+  background: rgba(14, 11, 26, 0.98);
+  backdrop-filter: blur(12px);
+  z-index: 50;
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--r2) var(--r2) 0 0;
+}
+.inbox-title {
+  padding: 15px 20px 5px; 
+  font-size: 1.3rem; 
+  font-weight: 700;
+  color: var(--t1);
+}
+.inbox-tabs {
+  display: flex;
+  overflow-x: auto;
+}
+.inbox-tabs::-webkit-scrollbar { display: none; }
+.inbox-tab {
+  flex: 1;
+  padding: 12px 20px; 
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--t3);
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+  position: relative;
+  white-space: nowrap;
+}
+.inbox-tab:hover { background: var(--pg); }
+.inbox-tab.active { color: var(--t1); }
+.inbox-tab.active::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 4px; background: var(--twitter-blue); border-radius: 4px 4px 0 0;
+}
+
+/* Panels */
+.inbox-panel { display: none; animation: panelIn 0.3s ease forwards; }
+.inbox-panel.active { display: block; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Notification Items */
+.notif-item {
+  display: flex;
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--border);
+  transition: 0.2s;
+  cursor: pointer;
+}
+.notif-item:hover { background: var(--pg); }
+.notif-item:last-child { border-bottom: none; border-radius: 0 0 var(--r2) var(--r2); }
+
+.notif-av-wrap {
+  position: relative;
+  margin-right: 15px;
+}
+.notif-av {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 18px;
+}
+.notif-badge {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+}
+.badge-like { background: var(--pink); }
+.badge-rt { background: var(--grn); }
+.badge-reply { background: var(--twitter-blue); }
+.badge-follow { background: var(--p); }
+.badge-update { background: var(--ylw); color: #000; }
+
+.notif-content { flex: 1; min-width: 0; }
+.notif-text { font-size: 14.5px; color: var(--t1); line-height: 1.5; }
+.notif-text strong { font-weight: 700; color: #fff; }
+.notif-snippet {
+  font-size: 14px; color: var(--t3);
+  margin-top: 8px; padding-left: 12px;
+  border-left: 2px solid var(--borderf);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.notif-time {
+  font-size: 12px; color: var(--t3);
+  margin-left: 15px; flex-shrink: 0; white-space: nowrap;
+}
+
+/* Empty States */
+.empty-state {
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--t3);
+}
+.empty-state svg { width: 48px; height: 48px; opacity: 0.5; margin-bottom: 15px; }
+.empty-state h3 { font-size: 1.2rem; color: var(--t1); margin-bottom: 5px; }
+
+/* Responsive */
+@media(max-width:720px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .overlay{display:block;}
+  .topbar{left:0;}
+  .main{margin-left:0;}
+  .ham{display:flex;}
+  .tb-uname{display:none;}
+  .inbox-card { border-radius: 0; border: none; border-top: 1px solid var(--border); margin-top: 0;}
+  .inbox-layout { padding: 0; }
+  .inbox-header { border-radius: 0; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="overlay" id="sb-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo"><h1>RE<span>DEFINE</span></h1><button class="sb-close-btn" id="sb-close">✕</button></div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main Menu</div>
+    <a href="home.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Home</a>
+    <a href="dashboard.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Study Hub</a>
+    <a href="community.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Community</a>
+    <a href="inbox.html" class="sb-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Inbox <span class="nav-badge">3</span></a>
+    <a href="about.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> About Us</a>
+    
+    <div class="sb-section" style="margin-top: 20px;">Account</div> 
+    <a href="profile.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</a>
+    <a href="subscription.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription</a>
+    <a href="index.html" class="sb-item" style="color:var(--red);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</a>
+  </nav>
+  <div class="sb-profile" id="sb-profile-bottom">
+    <div class="sb-av" id="sb-av-disp"><span id="sb-av-letter">P</span></div>
+    <div><div class="sb-pname" id="sb-pname">User</div><div class="sb-prole" id="sb-prole">Plan</div></div>
+  </div>
+</aside>
+
+<header class="topbar">
+  <button class="ham" id="ham"><span></span><span></span><span></span></button>
+  <div class="tb-search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search across REDEFINE..."/></div>
+  <div class="tb-right">
+    <div class="tb-btn" onclick="location.href='inbox.html'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot">3</div></div>
+    <div class="tb-profile" id="tb-profile-btn">
+      <div class="tb-av" id="tb-av-disp2"><span id="tb-av-letter2">P</span></div>
+      <span class="tb-uname" id="tb-uname">User</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="dropdown" id="profile-dd">
+        <div class="dd-head"><div class="dd-name" id="dd-name">User</div><div class="dd-email" id="dd-email">email@example.com</div></div>
+        <div class="dd-item" onclick="location.href='profile.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile</div>
+        <div class="dd-item" onclick="location.href='subscription.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription</div>
+        <div class="dd-sep"></div>
+        <div class="dd-item danger" onclick="location.href='index.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="inbox-layout">
+    
+    <div class="inbox-card">
+      
+      <div class="inbox-header">
+        <div class="inbox-title">Notifications</div>
+        <div class="inbox-tabs">
+          <div class="inbox-tab active" data-target="panel-community">Community</div>
+          <div class="inbox-tab" data-target="panel-updates">Updates</div>
+          <div class="inbox-tab" data-target="panel-messages">Messages</div>
+        </div>
+      </div>
+
+      <div class="inbox-panel active" id="panel-community">
+        
+        <div class="notif-item">
+          <div class="notif-av-wrap">
+            <div class="notif-av" style="background:#059669;">C</div>
+            <div class="notif-badge badge-like"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><strong>ChemWizard</strong> liked your post</div>
+            <div class="notif-snippet">"Does anyone have good notes for Electromagnetism? I'm struggling with Ampere's Law..."</div>
+          </div>
+          <div class="notif-time">10m</div>
+        </div>
+
+        <div class="notif-item">
+          <div class="notif-av-wrap">
+            <div class="notif-av" style="background:#f59e0b;">A</div>
+            <div class="notif-badge badge-reply"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><strong>Aman Sharma</strong> replied to your post</div>
+            <div class="notif-snippet">"Check out the REDEFINE Study Hub -> Physics -> Solutions. The PYQ section explains it perfectly!"</div>
+          </div>
+          <div class="notif-time">1h</div>
+        </div>
+
+        <div class="notif-item">
+          <div class="notif-av-wrap">
+            <div class="notif-av" style="background:#0891b2;">P</div>
+            <div class="notif-badge badge-rt"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></div>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><strong>Priya Patel</strong> reposted your doubt</div>
+            <div class="notif-snippet">"Anyone else up studying Ray Optics right now? I swear resolving these focal length problems is half math, half magic."</div>
+          </div>
+          <div class="notif-time">3h</div>
+        </div>
+
+        <div class="notif-item">
+          <div class="notif-av-wrap">
+            <div class="notif-av" style="background:#6d5ce8;">N</div>
+            <div class="notif-badge badge-follow"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><strong>Nisha Sharma</strong> followed you</div>
+          </div>
+          <div class="notif-time">1d</div>
+        </div>
+
+      </div>
+
+      <div class="inbox-panel" id="panel-updates">
+        
+        <div class="notif-item" style="background: rgba(139,124,248,0.05);">
+          <div class="notif-av-wrap">
+            <div class="notif-av" style="background:var(--p);">R</div>
+            <div class="notif-badge badge-update"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><strong>REDEFINE Official</strong> released a new update!</div>
+            <div class="notif-snippet">"The new Inbox feature is now live! Track all your community interactions, likes, and follows directly from the left menu."</div>
+          </div>
+          <div class="notif-time">Just now</div>
+        </div>
+
+        <div class="notif-item">
+          <div class="notif-av-wrap">
+            <div class="notif-av" style="background:var(--p);">R</div>
+            <div class="notif-badge badge-update"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><strong>REDEFINE Official</strong> posted an announcement</div>
+            <div class="notif-snippet">"We've added 50+ new PYQ papers for Class 12 Computer Science to the Study Hub. Check them out before your mocks!"</div>
+          </div>
+          <div class="notif-time">2d</div>
+        </div>
+
+      </div>
+
+      <div class="inbox-panel" id="panel-messages">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          <h3>No Direct Messages</h3>
+          <p>When you chat directly with other students or tutors, the messages will appear here.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+// ── PURE DARK BACKGROUND ──
+(function(){var c=document.getElementById('bg-canvas'),ctx=c.getContext('2d'),W,H;function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}window.addEventListener('resize',resize);resize();var PAL=[[139,124,248],[109,92,232],[180,90,240],[80,140,255]];function Orb(){this.init();}Orb.prototype.init=function(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=100+Math.random()*220;this.vx=(Math.random()-.5)*.15;this.vy=(Math.random()-.5)*.15;this.c=PAL[Math.floor(Math.random()*PAL.length)];this.a=.04+Math.random()*.07;};Orb.prototype.update=function(t){this.x+=this.vx;this.y+=this.vy;if(this.x<-this.r||this.x>W+this.r||this.y<-this.r||this.y>H+this.r)this.init();};Orb.prototype.draw=function(){var g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);g.addColorStop(0,'rgba('+this.c+','+this.a+')');g.addColorStop(1,'rgba('+this.c+',0)');ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();};var orbs=[];for(var i=0;i<10;i++){var o=new Orb();o.x=Math.random()*W;o.y=Math.random()*H;orbs.push(o);}function drawGrid(){ctx.save();ctx.strokeStyle='rgba(139,124,248,.035)';ctx.lineWidth=1;for(var x=0;x<W;x+=56){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(var y=0;y<H;y+=56){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}ctx.restore();}var t=0;function loop(){t++;ctx.clearRect(0,0,W,H);ctx.fillStyle='#0a0812';ctx.fillRect(0,0,W,H);drawGrid();orbs.forEach(function(o){o.update(t);o.draw();});requestAnimationFrame(loop);}loop();})();
+
+document.getElementById('ham').addEventListener('click', () => {document.querySelector('.sidebar').style.transform = 'translateX(0)';});
+
+// Tabs Logic
+const tabs = document.querySelectorAll('.inbox-tab');
+const panels = document.querySelectorAll('.inbox-panel');
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.getAttribute('data-target')).classList.add('active');
+    });
+});
+
+// ── MAGIC INBOX CLEAR LOGIC ──
+// Because the user visited the Inbox, we clear their notifications!
+localStorage.setItem('redefine_notif_count', "0");
+document.querySelectorAll('.notif-dot').forEach(el => el.style.display = 'none');
+document.querySelectorAll('.nav-badge').forEach(el => el.style.display = 'none');
+
+// Profile Sync
+document.addEventListener("DOMContentLoaded", () => {
+    const userData = localStorage.getItem("redefine_user");
+    if (!userData) { window.location.href = "index.html"; return; }
+    
+    const user = JSON.parse(userData);
+    const firstName = user.name.split(' ')[0];
+    const initial = firstName.charAt(0).toUpperCase();
+    const userPlan = user.plan || "Free";
+    
+    document.getElementById("sb-pname").textContent = user.name;
+    document.getElementById("sb-av-letter").textContent = initial;
+    document.getElementById("sb-prole").textContent = `${userPlan} Plan`;
+    document.getElementById("tb-uname").textContent = firstName;
+    document.getElementById("tb-av-letter2").textContent = initial;
+
+    if (userPlan === 'Elite' || userPlan === 'Pro') {
+        if (userPlan === 'Elite') { document.getElementById("sb-pname").style.color = 'var(--ylw)'; document.getElementById("tb-uname").style.color = 'var(--ylw)'; }
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>REDEFINE | Home Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#8b7cf8;--pd:#6d5ce8;--pr:rgba(139,124,248,0.18);--pg:rgba(139,124,248,0.08);
+  --bg:#0a0812;--bg2:rgba(14,11,26,0.97);--card:rgba(18,14,30,0.7);
+  --border:rgba(255,255,255,0.07);--borderf:rgba(139,124,248,0.4);
+  --t1:#f0eeff;--t2:#a09bbf;--t3:#6b6585;
+  --red:#f87171;--grn:#34d399;--ylw:#fbbf24;--cyan:#06b6d4;
+  --r:12px;--r2:18px;--r3:24px;
+  --font:'Sora',sans-serif;
+  --sw:260px;--sh:64px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);overflow-x:hidden;min-height:100vh;font-size:14px; display:block !important;}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.hidden{display:none!important;}
+a{text-decoration:none;color:inherit;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;top:0;left:0;width:var(--sw);height:100vh;
+  background:rgba(10,8,20,0.85);backdrop-filter:blur(24px);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:200;
+  transition:transform .35s cubic-bezier(.25,1,.35,1);
+}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-logo h1{font-size:1.35rem;font-weight:700;letter-spacing:1.5px;}
+.sb-logo span{color:var(--p);}
+.sb-close-btn{display:none;margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;padding:4px;}
+
+.sb-nav{flex:1;padding:20px 10px;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{display:none;}
+.sb-section{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;padding:10px 10px 5px;}
+.sb-item{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;
+  border-radius:var(--r);cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;
+  transition:all .18s;margin-bottom:2px;border:1px solid transparent;
+}
+.sb-item:hover{background:var(--pg);color:var(--t1);}
+.sb-item.active{background:var(--pr);border-color:rgba(139,124,248,0.25);color:var(--p);}
+.sb-item svg{width:16px;height:16px;flex-shrink:0;opacity:.8;}
+.sb-item.active svg{opacity:1;}
+
+.sb-profile{
+  padding:12px 14px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .18s;
+}
+.sb-profile:hover{background:var(--pg);}
+.sb-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.4);flex-shrink:0;}
+.sb-av img{width:100%;height:100%;object-fit:cover;display:none;}
+.sb-pname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; transition: color 0.3s;}
+.sb-prole{font-size:10px;color:var(--t3);}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:var(--sw);right:0;height:var(--sh);
+  background:rgba(10,8,18,0.7);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;padding:0 24px;z-index:150;
+}
+.ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;}
+.ham span{display:block;width:20px;height:2px;background:var(--t2);border-radius:2px;transition:.25s;}
+.tb-search{
+  flex:1;max-width:360px;display:flex;align-items:center;gap:9px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:30px;padding:0 14px;height:38px;transition:all .2s;
+}
+.tb-search:focus-within{border-color:var(--borderf);box-shadow:0 0 0 3px rgba(139,124,248,0.12);}
+.tb-search input{background:none;border:none;outline:none;flex:1;font-family:var(--font);font-size:13px;color:var(--t1);}
+.tb-search input::placeholder{color:var(--t3);}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+/* UPDATED NOTIFICATION BADGES */
+.notif-dot{position:absolute;top:0px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--red);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;padding:0 4px;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+
+.tb-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:all .18s;position:relative;}
+.tb-btn:hover{background:var(--pg);color:var(--p);border-color:rgba(139,124,248,0.3);}
+
+.tb-profile{display:flex;align-items:center;gap:9px;cursor:pointer;padding:5px 12px;border-radius:30px;border:1px solid var(--border);background:rgba(255,255,255,0.02);transition:all .18s;position:relative;}
+.tb-profile:hover{background:var(--pg);border-color:rgba(139,124,248,0.25);}
+.tb-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.45);}
+.tb-av img{width:100%;height:100%;object-fit:cover;display:none;}
+.tb-uname{font-size:13px;font-weight:600; transition: color 0.3s;}
+
+/* Dropdown */
+.dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;min-width:210px;
+  background:rgba(14,11,26,0.98);backdrop-filter:blur(24px);
+  border:1px solid rgba(139,124,248,0.2);border-radius:var(--r2);
+  box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;
+  opacity:0;pointer-events:none;transform:translateY(-6px);
+  transition:all .22s cubic-bezier(.25,1,.35,1);z-index:300;
+}
+.dropdown.open{opacity:1;pointer-events:auto;transform:translateY(0);}
+.dd-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.dd-name{font-size:13.5px;font-weight:600;}
+.dd-email{font-size:11px;color:var(--t3);margin-top:2px;}
+.dd-item{display:flex;align-items:center;gap:11px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);transition:all .15s;}
+.dd-item:hover{background:var(--pg);color:var(--t1);}
+.dd-item.danger{color:var(--red);}
+.dd-item.danger:hover{background:rgba(248,113,113,0.08);}
+.dd-sep{height:1px;background:var(--border);margin:3px 0;}
+
+/* ── EDTECH 2-COLUMN LAYOUT ── */
+.main{margin-left:var(--sw);padding-top:var(--sh);min-height:100vh;position:relative;z-index:1; padding-bottom: 60px;}
+.overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);}
+
+.edtech-layout {
+  display: flex;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 30px;
+  align-items: flex-start;
+}
+.edtech-main { flex: 1; min-width: 0; }
+.edtech-sidebar { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 25px; }
+
+/* ── 1. ORIGINAL TOP SLIDER BANNER ── */
+.promo-banner {
+  border: 1px solid var(--borderf);
+  border-radius: var(--r3);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  margin-bottom: 40px; 
+  height: 280px;
+}
+.promo-slides { position: relative; width: 100%; height: 100%; }
+.promo-slide {
+  position: absolute; inset: 0; padding: 40px 40px 70px;
+  opacity: 0; transition: opacity 0.6s ease-in-out;
+  display: flex; flex-direction: column; justify-content: center;
+  z-index: 1; pointer-events: none;
+}
+.promo-slide.active { opacity: 1; z-index: 2; pointer-events: auto; }
+
+.promo-slide:nth-child(1) { background: linear-gradient(135deg, rgba(139,124,248,0.25), rgba(10,8,18,0.9)); }
+.promo-slide:nth-child(2) { background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(10,8,18,0.9)); }
+
+.promo-banner::before {
+  content: ''; position: absolute; top: -50px; right: -50px; 
+  width: 300px; height: 300px; background: radial-gradient(circle, rgba(139,124,248,0.3), transparent 70%);
+  border-radius: 50%; pointer-events: none; z-index: 0;
+}
+
+.promo-content { position: relative; z-index: 10; width: 100%; }
+.promo-content h1 { font-size: 2.4rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+.promo-content h1 span { color: var(--p); }
+.promo-content p { font-size: 1.05rem; color: var(--t2); max-width: 600px; line-height: 1.6; margin-bottom: 15px;}
+.promo-btn {
+  background: var(--p); color: white; border: none; padding: 10px 20px; border-radius: 20px; 
+  font-weight: 600; font-family: var(--font); cursor: pointer; transition: 0.2s; width: fit-content;
+}
+.promo-btn:hover { background: var(--pd); }
+
+.promo-dots {
+  position: absolute; bottom: 25px; left: 40px; display: flex; gap: 8px; z-index: 20;
+}
+.promo-dot {
+  width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.2); cursor: pointer; transition: 0.3s;
+}
+.promo-dot.active { width: 24px; background: var(--p); }
+
+/* ── 2. DAILY GOALS & TRACKER ── */
+.section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;}
+.section-title { font-size: 1.25rem; font-weight: 700; color: var(--t1); }
+
+.tracker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 45px; }
+.track-box { 
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); 
+  padding: 25px; transition: 0.3s cubic-bezier(0.25, 1, 0.35, 1); position: relative; overflow: hidden;
+}
+.track-box:hover { border-color: rgba(139,124,248,0.4); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.track-box::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(139,124,248,0.05), transparent); opacity: 0; transition: 0.3s; }
+.track-box:hover::before { opacity: 1; }
+
+.track-head { display: flex; justify-content: space-between; color: var(--t2); font-size: 13px; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; position: relative; z-index: 1;}
+.track-icon { background: rgba(255,255,255,0.05); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.track-val { font-size: 2.2rem; font-weight: 700; color: var(--t1); margin-bottom: 15px; display: flex; align-items: baseline; gap: 5px; position: relative; z-index: 1;}
+.track-val span { font-size: 14px; color: var(--t3); font-weight: 500; }
+
+.progress-wrap { position: relative; width: 100%; z-index: 1;}
+.progress-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--t2); margin-bottom: 6px; }
+.progress-track { width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(0.25, 1, 0.35, 1); width: 0%; background: linear-gradient(90deg, var(--p), #b06aff); }
+.fill-green { background: linear-gradient(90deg, var(--grn), #10b981); }
+.fill-yellow { background: linear-gradient(90deg, var(--ylw), #f59e0b); }
+
+
+/* ── 3. FEATURED CONTENT BANNER (6 SLIDES) ── */
+.feat-banner {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r3);
+  position: relative; overflow: hidden; margin-bottom: 45px; height: 320px; 
+}
+.feat-slides { position: relative; width: 100%; height: 100%; }
+.feat-slide {
+  position: absolute; inset: 0; padding: 50px 40px; 
+  opacity: 0; transition: opacity 0.5s ease-in-out;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  z-index: 1; pointer-events: none;
+}
+.feat-slide.active { opacity: 1; z-index: 2; pointer-events: auto; }
+
+/* Dark gradients */
+.feat-slide:nth-child(1) { background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(10,8,18,0.8)); }
+.feat-slide:nth-child(2) { background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(10,8,18,0.8)); }
+.feat-slide:nth-child(3) { background: linear-gradient(135deg, rgba(29,155,240,0.15), rgba(10,8,18,0.8)); }
+.feat-slide:nth-child(4) { background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(10,8,18,0.8)); }
+.feat-slide:nth-child(5) { background: linear-gradient(135deg, rgba(29,155,240,0.15), rgba(10,8,18,0.8)); }
+.feat-slide:nth-child(6) { background: linear-gradient(135deg, rgba(248,113,113,0.15), rgba(10,8,18,0.8)); }
+
+.feat-badge {
+  display: inline-block; padding: 5px 12px; border-radius: 20px; 
+  background: rgba(255,255,255,0.1); color: var(--t1); font-size: 11px; 
+  font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.feat-slide h2 { font-size: 1.7rem; font-weight: 700; color: #fff; margin-bottom: 12px; line-height: 1.3; max-width: 800px; }
+.feat-slide p { font-size: 13.5px; color: var(--t2); max-width: 600px; margin-bottom: 25px; line-height: 1.6; }
+.feat-btn {
+  background: var(--p); color: white; border: none; padding: 12px 28px; border-radius: 30px; 
+  font-weight: 600; font-family: var(--font); cursor: pointer; transition: 0.2s; font-size: 14px;
+}
+.feat-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+/* Embedded Tweet Card inside the slider */
+.embedded-tweet {
+  background: rgba(20, 16, 35, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); 
+  border-radius: var(--r2); padding: 25px; max-width: 600px; width: 100%; margin: 0 auto; box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+.feat-controls { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+.feat-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1); color: var(--t2); font-size: 18px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  pointer-events: auto; transition: 0.2s; backdrop-filter: blur(5px);
+}
+.feat-arrow:hover { background: var(--p); color: white; border-color: var(--p); }
+.feat-arrow.prev { left: 15px; }
+.feat-arrow.next { right: 15px; }
+
+.feat-dots {
+  position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; pointer-events: auto;
+}
+.feat-dot { width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.3); cursor: pointer; transition: 0.3s; }
+.feat-dot.active { width: 24px; background: var(--p); }
+
+
+/* ── 4. OFFICIAL NEWS & UPDATES ── */
+.news-list { display: flex; flex-direction: column; gap: 15px; margin-bottom: 45px; }
+.news-item { 
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r); 
+  padding: 20px; display: flex; gap: 20px; align-items: center; transition: 0.2s; cursor: pointer;
+}
+.news-item:hover { background: rgba(255,255,255,0.03); border-color: rgba(139,124,248,0.4); transform: translateX(5px); }
+.news-date { 
+  text-align: center; background: rgba(139,124,248,0.1); padding: 12px 18px; 
+  border-radius: 12px; border: 1px solid rgba(139,124,248,0.2); flex-shrink: 0; min-width: 80px;
+}
+.news-date span { display: block; font-size: 20px; font-weight: 700; color: var(--p); line-height: 1; margin-bottom: 2px;}
+.news-date small { font-size: 11px; font-weight: 600; color: var(--t2); text-transform: uppercase; }
+.news-content { flex: 1; }
+.news-content h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--t1); }
+.news-content p { font-size: 13px; color: var(--t3); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.news-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--t2); margin-top: 8px;}
+
+/* ── 5. RECOMMENDED READING ── */
+.rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-bottom: 45px; }
+.rec-card { 
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); 
+  padding: 22px; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; gap: 15px; 
+}
+.rec-card:hover { border-color: rgba(52,211,153,0.4); transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); background: rgba(52,211,153,0.03);}
+.rec-icon { 
+  width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; 
+  font-size: 1.4rem; background: rgba(52,211,153,0.15); color: var(--grn); border: 1px solid rgba(52,211,153,0.3); 
+}
+.rec-info h4 { font-size: 14.5px; font-weight: 600; margin-bottom: 5px; color: var(--t1); line-height: 1.3;}
+.rec-info p { font-size: 12px; color: var(--t3); }
+
+/* ── 6. FROM THE COMMUNITY (RESTORED TO BOTTOM) ── */
+.tweet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.tweet-card { 
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); 
+  padding: 22px; transition: 0.3s;
+}
+.tweet-card:hover { border-color: rgba(6,182,212,0.4); transform: translateY(-3px); background: rgba(6,182,212,0.03); }
+.tweet-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.tweet-av { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;}
+.tweet-user { flex: 1; }
+.tweet-user-row { display: flex; align-items: center; gap: 4px; }
+.tweet-name { font-size: 14px; font-weight: 700; color: var(--t1); }
+.tweet-verified { color: #1d9bf0; display: flex; align-items: center;} 
+.tweet-handle { font-size: 12px; color: var(--t3); }
+.tweet-body { font-size: 13.5px; color: var(--t2); line-height: 1.6; margin-bottom: 12px; }
+.tweet-footer { font-size: 12px; color: var(--t3); }
+
+/* ── RIGHT COLUMN WIDGETS ── */
+.widget { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 25px; }
+.widget h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; color: var(--t1); }
+
+.stats-box { display: flex; flex-direction: column; gap: 15px; }
+.stat-row { display: flex; align-items: center; gap: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--border); }
+.stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.stat-val { flex: 1; }
+.stat-val h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
+.stat-val p { font-size: 11px; color: var(--t3); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;}
+
+.timeline { display: flex; flex-direction: column; gap: 0; position: relative; margin-top: 10px; }
+.timeline::before { content: ''; position: absolute; left: 24px; top: 10px; bottom: 10px; width: 2px; background: var(--border); z-index: 0; }
+.time-event { display: flex; gap: 15px; position: relative; z-index: 1; margin-bottom: 20px; }
+.time-bubble { width: 50px; font-size: 11px; font-weight: 700; color: var(--t2); text-align: right; padding-top: 4px;}
+.time-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--p); margin-top: 5px; flex-shrink: 0; }
+.time-dot.live { background: var(--grn); border-color: rgba(52,211,153,0.4); box-shadow: 0 0 10px rgba(52,211,153,0.6); }
+.time-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px 15px; border-radius: 12px; flex: 1; transition: 0.2s; cursor: pointer;}
+.time-card:hover { border-color: var(--borderf); background: rgba(139,124,248,0.05); }
+.time-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.time-sub { font-size: 11px; color: var(--t3); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){
+  .edtech-layout { flex-direction: column; }
+  .edtech-sidebar { width: 100%; flex-direction: row; gap: 20px;}
+  .widget { flex: 1; }
+}
+@media(max-width:720px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .overlay{display:block;}
+  .topbar{left:0;}
+  .main{margin-left:0;}
+  .ham{display:flex;}
+  .sb-close-btn{display:block;}
+  .edtech-sidebar { flex-direction: column; }
+  .tb-uname{display:none;}
+  .promo-banner { padding: 30px; height: auto; min-height: 250px;}
+  .feat-banner { height: auto; min-height: 280px; padding: 20px 10px 40px;}
+  .feat-slide h2 { font-size: 1.4rem; }
+  .feat-slide { padding: 30px 20px 60px; }
+  .news-item { flex-direction: column; align-items: flex-start; gap: 10px;}
+  .news-date { display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="overlay" id="sb-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <h1>RE<span>DEFINE</span></h1>
+    <button class="sb-close-btn" id="sb-close">✕</button>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Main Menu</div>
+    <a href="home.html" class="sb-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Home
+    </a>
+    <a href="dashboard.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Study Hub
+    </a>
+    <a href="community.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Community
+    </a>
+    <a href="inbox.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Inbox <span class="nav-badge">3</span>
+    </a>
+    <a href="about.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> About Us
+    </a>
+    
+    <div class="sb-section" style="margin-top: 20px;">Account</div> 
+    <a href="profile.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile
+    </a>
+    <a href="subscription.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription
+    </a>
+    <a href="index.html" class="sb-item" style="color:var(--red);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout
+    </a>
+  </nav>
+
+  <div class="sb-profile" id="sb-profile-bottom">
+    <div class="sb-av" id="sb-av-disp"><span id="sb-av-letter">P</span><img id="sb-av-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;"/></div>
+    <div>
+      <div class="sb-pname" id="sb-pname">Prince Kumar</div>
+      <div class="sb-prole" id="sb-prole">Free Plan</div>
+    </div>
+  </div>
+</aside>
+
+<header class="topbar">
+  <button class="ham" id="ham">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="tb-search">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search across REDEFINE..."/>
+  </div>
+  
+  <div class="tb-right">
+    
+    <div class="tb-btn" onclick="location.href='inbox.html'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <div class="notif-dot">3</div>
+    </div>
+
+    <div class="tb-profile" id="tb-profile-btn">
+      <div class="tb-av" id="tb-av-disp2"><span id="tb-av-letter2">P</span><img id="tb-av-img2" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;"/></div>
+      <span class="tb-uname" id="tb-uname">Prince</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      
+      <div class="dropdown" id="profile-dd">
+        <div class="dd-head">
+          <div class="dd-name" id="dd-name">Prince Kumar</div>
+          <div class="dd-email" id="dd-email">prince@example.com</div>
+        </div>
+        <div class="dd-item" onclick="location.href='profile.html'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile
+        </div>
+        <div class="dd-item" onclick="location.href='subscription.html'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription
+        </div>
+        <div class="dd-sep"></div>
+        <div class="dd-item danger" onclick="location.href='index.html'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="edtech-layout">
+    
+    <div class="edtech-main">
+      
+      <div class="promo-banner">
+        <div class="promo-slides">
+          
+          <div class="promo-slide active">
+            <div class="promo-content">
+              <h1 id="dynamic-greeting">Welcome back, <span>Prince!</span> 👋</h1>
+              <p>Your Class 12 board preparation is on track. Jump back into your courses or explore new study materials.</p>
+            </div>
+          </div>
+
+          <div class="promo-slide">
+            <div class="promo-content">
+              <h1 style="color:var(--ylw);"><span>40% OFF</span> Elite Plan! 🚀</h1>
+              <p>Upgrade today to unlock 24x7 Doubt Solving, Live Classes, and 1-on-1 personalized mentorship.</p>
+              <button class="promo-btn" onclick="location.href='subscription.html'" style="background:var(--ylw); color:var(--bg);">Claim Offer</button>
+            </div>
+          </div>
+          
+        </div>
+        
+        <div class="promo-dots">
+          <div class="promo-dot active" data-index="0"></div>
+          <div class="promo-dot" data-index="1"></div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">Daily Study Tracker</h2>
+      </div>
+      
+      <div class="tracker-grid">
+        
+        <div class="track-box">
+          <div class="track-head">
+            <span>Study Time</span>
+            <div class="track-icon">⏱️</div>
+          </div>
+          <div class="track-val">4.5 <span>hrs</span></div>
+          <div class="progress-wrap">
+            <div class="progress-labels"><span>Goal: 6 hrs</span> <span>75%</span></div>
+            <div class="progress-track"><div class="progress-fill" data-width="75%"></div></div>
+          </div>
+        </div>
+
+        <div class="track-box">
+          <div class="track-head">
+            <span>Pages Read</span>
+            <div class="track-icon">📖</div>
+          </div>
+          <div class="track-val">32 <span>pgs</span></div>
+          <div class="progress-wrap">
+            <div class="progress-labels"><span>Goal: 40 pgs</span> <span>80%</span></div>
+            <div class="progress-track"><div class="progress-fill fill-green" data-width="80%"></div></div>
+          </div>
+        </div>
+
+        <div class="track-box">
+          <div class="track-head">
+            <span>Tests Attempted</span>
+            <div class="track-icon">🎯</div>
+          </div>
+          <div class="track-val">1 <span>test</span></div>
+          <div class="progress-wrap">
+            <div class="progress-labels"><span>Goal: 2 tests</span> <span>50%</span></div>
+            <div class="progress-track"><div class="progress-fill fill-yellow" data-width="50%"></div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="feat-banner">
+        <div class="feat-controls">
+          <button class="feat-arrow prev" id="feat-prev">❮</button>
+          <button class="feat-arrow next" id="feat-next">❯</button>
+          <div class="feat-dots">
+            <div class="feat-dot active" data-feat="0"></div>
+            <div class="feat-dot" data-feat="1"></div>
+            <div class="feat-dot" data-feat="2"></div>
+            <div class="feat-dot" data-feat="3"></div>
+            <div class="feat-dot" data-feat="4"></div>
+            <div class="feat-dot" data-feat="5"></div>
+          </div>
+        </div>
+
+        <div class="feat-slides">
+          
+          <div class="feat-slide active">
+            <span class="feat-badge" style="color:var(--grn); border-color: rgba(52,211,153,0.3);">Featured Article • REDEFINE Blog</span>
+            <h2>Top 10 Productivity Hacks for Board Exams</h2>
+            <p>Struggling to focus? Discover the best science-backed methods to retain information and study effectively without burning out.</p>
+            <button class="feat-btn" style="background:var(--grn); color:var(--bg);" onclick="alert('Redirecting to blog...')">Read Article</button>
+          </div>
+
+          <div class="feat-slide">
+            <div class="embedded-tweet">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                  <div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; background:var(--p); color:white;">R</div>
+                  <div style="flex: 1; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                      <span style="font-size: 14px; font-weight: 700; color: #fff;">REDEFINE Team</span>
+                      <span style="color: #1d9bf0; display: flex; align-items: center;" title="Verified Account">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg>
+                      </span>
+                    </div>
+                    <span style="font-size: 12px; color: var(--t3);">@RedefineOfficial</span>
+                  </div>
+                  <span style="font-size: 1.1rem; color:var(--cyan);">🐦</span>
+                </div>
+                <p class="tweet-body" style="text-align: left; font-size: 15px; color: #fff; line-height: 1.5;">🚀 We are thrilled to announce that our most requested feature — Collaborative Study Rooms — is launching next week! Study together, share notes in real-time, and ace your exams as a community. Get ready to #RedefineLearning! 📚</p>
+                <div style="text-align: left; font-size: 12px; color: var(--t3); margin-top: 10px;">2:15 PM • Apr 20, 2026 • 8.4K Views</div>
+            </div>
+            <button class="feat-btn" style="background:#1d9bf0; color:white; margin-top: 15px;" onclick="location.href='community.html'">View in Community</button>
+          </div>
+
+          <div class="feat-slide">
+            <span class="feat-badge" style="color:var(--cyan); border-color: rgba(6,182,212,0.3);">Tech News • EduTech Today</span>
+            <h2>How AI is Transforming Student Prep</h2>
+            <p>Explore how modern platforms are using artificial intelligence to provide personalized testing and dynamic study environments.</p>
+            <button class="feat-btn" style="background:var(--cyan); color:var(--bg);" onclick="alert('Redirecting to news...')">Explore Topic</button>
+          </div>
+
+          <div class="feat-slide">
+            <div class="embedded-tweet">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                  <div style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; background:#fbbf24; color:white;">N</div>
+                  <div style="flex: 1; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 14px; font-weight: 700; color: #fff;">Nisha Sharma</span>
+                    </div>
+                    <span style="font-size: 12px; color: var(--t3);">@NishaClass12</span>
+                  </div>
+                  <span style="font-size: 1.1rem; color:var(--cyan);">🐦</span>
+                </div>
+                <p class="tweet-body" style="text-align: left; font-size: 15px; color:#fff; line-height: 1.5;">Just hit a 30-day study streak on REDEFINE! The daily goals feature really kept me motivated. This collaborative feature sounds epic though, can't wait! 🔥</p>
+                <div style="text-align: left; font-size: 12px; color: var(--t3); margin-top: 10px;">10:05 AM • Apr 20, 2026 • 1.2K Views</div>
+            </div>
+            <button class="feat-btn" style="background:var(--ylw); color:var(--bg); margin-top: 15px;" onclick="location.href='community.html'">Like & Retweet</button>
+          </div>
+
+          <div class="feat-slide">
+            <span class="feat-badge" style="color:var(--p); border-color: rgba(139,124,248,0.3);">Free Resource</span>
+            <h2>Class 12 Physics Formula Cheat Sheet</h2>
+            <p>A complete 3-page summary of all essential formulas for your upcoming board exams. Download it for free right now.</p>
+            <button class="feat-btn" style="background:var(--p); color:white;" onclick="location.href='dashboard.html'">Get PDF</button>
+          </div>
+
+          <div class="feat-slide">
+            <span class="feat-badge" style="color:var(--red); border-color: rgba(248,113,113,0.3);">🔴 Live Masterclass</span>
+            <h2>Mastering Organic Chemistry</h2>
+            <p>Join Dr. Ayesha this Friday for a 2-hour intensive breakdown of reaction mechanisms. Exclusive for Pro & Elite members.</p>
+            <button class="feat-btn" style="background:var(--red); color:white;" onclick="location.href='subscription.html'">Reserve Seat</button>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top: 20px;">
+        <h2 class="section-title">Official Updates & News</h2>
+      </div>
+
+      <div class="news-list">
+        
+        <div class="news-item">
+          <div class="news-date">
+            <span>20</span>
+            <small>Apr</small>
+          </div>
+          <div class="news-content">
+            <h4>NTA releases new guidelines for JEE Main 2026</h4>
+            <p>The National Testing Agency has updated the marking scheme and registration deadlines for the upcoming engineering entrance exams.</p>
+            <div class="news-tag" style="color:var(--p); background: rgba(139,124,248,0.15);">NTA Update</div>
+          </div>
+        </div>
+
+        <div class="news-item">
+          <div class="news-date">
+            <span>18</span>
+            <small>Apr</small>
+          </div>
+          <div class="news-content">
+            <h4>CBSE Class 12 Syllabus Rationalization</h4>
+            <p>NCERT has published the finalized rationalized syllabus for Class 12 Physics and Chemistry for the academic year 2025-26.</p>
+            <div class="news-tag" style="color:var(--grn); background: rgba(52,211,153,0.15);">NCERT Notice</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">Recommended Reading</h2>
+        <span class="view-all" onclick="location.href='dashboard.html'">View Study Hub →</span>
+      </div>
+
+      <div class="rec-grid">
+        
+        <div class="rec-card" onclick="location.href='dashboard.html'">
+          <div class="rec-icon">📄</div>
+          <div class="rec-info">
+            <h4>Physics Ch-4 Summary Notes</h4>
+            <p>12 Pages • Quick Revision</p>
+          </div>
+        </div>
+
+        <div class="rec-card" onclick="location.href='dashboard.html'">
+          <div class="rec-icon" style="color: var(--cyan); background: rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.3);">📘</div>
+          <div class="rec-info">
+            <h4>Organic Chemistry Reactions</h4>
+            <p>NCERT Textbook Extract</p>
+          </div>
+        </div>
+
+        <div class="rec-card" onclick="location.href='dashboard.html'">
+          <div class="rec-icon" style="color: var(--ylw); background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.3);">📝</div>
+          <div class="rec-info">
+            <h4>Maths: Calculus Formulas</h4>
+            <p>PDF Cheat Sheet</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">From the REDEFINE Community</h2>
+      </div>
+
+      <div class="tweet-grid">
+        
+        <div class="tweet-card" onclick="location.href='community.html'" style="cursor: pointer;">
+          <div class="tweet-header">
+            <div class="tweet-av" style="background:var(--p); color:white;">R</div>
+            <div class="tweet-user">
+              <div class="tweet-user-row">
+                <span class="tweet-name">REDEFINE Team</span>
+                <span class="tweet-verified" title="Verified Account">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg>
+                </span>
+              </div>
+              <span class="tweet-handle">@RedefineOfficial</span>
+            </div>
+            <span style="font-size: 1.1rem; color:var(--cyan);">🐦</span>
+          </div>
+          <p class="tweet-body">🚀 We are thrilled to announce that our most requested feature — Collaborative Study Rooms — is launching next week! Study together, share notes in real-time, and ace your exams as a community. Get ready to #RedefineLearning! 📚</p>
+          <div class="tweet-footer">2:15 PM • Apr 20, 2026 • 8.4K Views</div>
+        </div>
+
+        <div class="tweet-card" onclick="location.href='community.html'" style="cursor: pointer;">
+            <div class="tweet-header">
+              <div class="tweet-av" style="background:#f59e0b; color:white;">N</div>
+              <div class="tweet-user">
+                <div class="tweet-user-row">
+                    <span class="tweet-name">Nisha Sharma</span>
+                </div>
+                <span class="tweet-handle">@NishaClass12</span>
+              </div>
+              <span style="font-size: 1.1rem; color:var(--cyan);">🐦</span>
+            </div>
+            <p class="tweet-body">Just hit a 30-day study streak on REDEFINE! The daily goals feature really kept me motivated. This collaborative feature sounds epic though, can't wait! 🔥</p>
+            <div class="tweet-footer">10:05 AM • Apr 20, 2026 • 1.2K Views</div>
+          </div>
+
+      </div>
+
+    </div>
+
+    <div class="edtech-sidebar">
+      <div class="widget">
+        <h3>Your Stats</h3>
+        <div class="stats-box">
+          <div class="stat-row">
+            <div class="stat-icon" style="background: rgba(139,124,248,0.15); color: var(--p);">🔥</div>
+            <div class="stat-val">
+              <h4>14 Days</h4>
+              <p>Current Streak</p>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-icon" style="background: rgba(251,191,36,0.15); color: var(--ylw);">🏆</div>
+            <div class="stat-val">
+              <h4>Top 5%</h4>
+              <p>Global Rank</p>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-icon" style="background: rgba(52,211,153,0.15); color: var(--grn);">⭐</div>
+            <div class="stat-val">
+              <h4>1,420</h4>
+              <p>Learning Points</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <h3>Hourly Study Plan</h3>
+        <div class="timeline">
+          <div class="time-event">
+            <div class="time-bubble">10:00<br>AM</div>
+            <div class="time-dot"></div>
+            <div class="time-card">
+              <div class="time-title">Read NCERT Math</div>
+              <div class="time-sub">Ch: Coordinate Geometry</div>
+            </div>
+          </div>
+          <div class="time-event">
+            <div class="time-bubble" style="color:var(--grn);">02:00<br>PM</div>
+            <div class="time-dot live"></div>
+            <div class="time-card" style="border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.05);">
+              <div class="time-title" style="color:var(--grn);">Active: Attempt Mock Test</div>
+              <div class="time-sub">Physics PYQ 2024</div>
+            </div>
+          </div>
+          <div class="time-event">
+            <div class="time-bubble">05:00<br>PM</div>
+            <div class="time-dot"></div>
+            <div class="time-card">
+              <div class="time-title">Review Notes</div>
+              <div class="time-sub">Organic Chemistry PDF</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// BG Canvas (Pure Dark Theme)
+(function(){
+  var c=document.getElementById('bg-canvas'),ctx=c.getContext('2d'),W,H;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  window.addEventListener('resize',resize);resize();
+  var PAL=[[139,124,248],[109,92,232],[180,90,240],[80,140,255],[220,90,180]];
+  function Orb(){this.init();}
+  Orb.prototype.init=function(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=100+Math.random()*220;this.vx=(Math.random()-.5)*.15;this.vy=(Math.random()-.5)*.15;this.c=PAL[Math.floor(Math.random()*PAL.length)];this.a=.04+Math.random()*.07;};
+  Orb.prototype.update=function(t){this.x+=this.vx;this.y+=this.vy;if(this.x<-this.r||this.x>W+this.r||this.y<-this.r||this.y>H+this.r)this.init();};
+  Orb.prototype.draw=function(){
+    var g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);
+    g.addColorStop(0,'rgba('+this.c+','+this.a+')');
+    g.addColorStop(1,'rgba('+this.c+',0)');
+    ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+  };
+  var orbs=[];for(var i=0;i<10;i++){var o=new Orb();o.x=Math.random()*W;o.y=Math.random()*H;orbs.push(o);}
+  
+  function drawGrid(){
+    ctx.save();
+    ctx.strokeStyle='rgba(139,124,248,.035)';
+    ctx.lineWidth=1;
+    for(var x=0;x<W;x+=56){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(var y=0;y<H;y+=56){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    ctx.restore();
+  }
+  
+  var t=0;
+  function loop(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#0a0812';
+    ctx.fillRect(0,0,W,H);
+    drawGrid();
+    orbs.forEach(function(o){o.update(t);o.draw();});
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+// Sidebar Toggle
+document.getElementById('ham').addEventListener('click', function(){
+  document.querySelector('.sidebar').style.transform = 'translateX(0)';
+  document.getElementById('sb-overlay').style.display='block';
+});
+document.getElementById('sb-overlay').addEventListener('click', function(){
+  document.querySelector('.sidebar').style.transform = 'translateX(-100%)';
+  document.getElementById('sb-overlay').style.display='none';
+});
+
+// Dropdown Logic
+var ddOpen = false;
+var dd = document.getElementById('profile-dd');
+document.getElementById('tb-profile-btn').addEventListener('click', function(e){ 
+  e.stopPropagation(); 
+  if(ddOpen) { dd.style.opacity='0'; dd.style.pointerEvents='none'; dd.style.transform='translateY(-6px)'; ddOpen=false; } 
+  else { dd.style.opacity='1'; dd.style.pointerEvents='auto'; dd.style.transform='translateY(0)'; ddOpen=true; } 
+});
+document.addEventListener('click', function(){ dd.style.opacity='0'; dd.style.pointerEvents='none'; dd.style.transform='translateY(-6px)'; ddOpen=false; });
+
+// ── ORIGINAL TOP PROMO SLIDER ──
+let currentPromo = 0;
+const promos = document.querySelectorAll('.promo-slide');
+const promoDots = document.querySelectorAll('.promo-dot');
+let promoInterval;
+function showPromo(index) {
+  if(promos.length === 0) return;
+  promos.forEach(p => p.classList.remove('active'));
+  promoDots.forEach(d => d.classList.remove('active'));
+  currentPromo = (index + promos.length) % promos.length;
+  promos[currentPromo].classList.add('active');
+  promoDots[currentPromo].classList.add('active');
+}
+function nextPromo() { showPromo(currentPromo + 1); }
+function startPromoSlider() { if (!promoInterval && promos.length > 0) { promoInterval = setInterval(nextPromo, 4000); } }
+function stopPromoSlider() { clearInterval(promoInterval); promoInterval = null; }
+promoDots.forEach(dot => {
+  dot.addEventListener('click', (e) => {
+    stopPromoSlider();
+    showPromo(parseInt(e.target.dataset.index));
+    startPromoSlider();
+  });
+});
+
+// ── FEATURED CONTENT SLIDER (6 SLIDES) ──
+let currentFeat = 0;
+const feats = document.querySelectorAll('.feat-slide');
+const featDots = document.querySelectorAll('.feat-dot');
+let featInterval;
+function showFeat(index) {
+  if(feats.length === 0) return;
+  feats.forEach(p => p.classList.remove('active'));
+  featDots.forEach(d => d.classList.remove('active'));
+  currentFeat = (index + feats.length) % feats.length;
+  feats[currentFeat].classList.add('active');
+  featDots[currentFeat].classList.add('active');
+}
+function nextFeat() { showFeat(currentFeat + 1); }
+function prevFeat() { showFeat(currentFeat - 1); }
+function startFeatSlider() { if (!featInterval && feats.length > 0) { featInterval = setInterval(nextFeat, 5000); } }
+function stopFeatSlider() { clearInterval(featInterval); featInterval = null; }
+
+featDots.forEach(dot => {
+  dot.addEventListener('click', (e) => {
+    stopFeatSlider();
+    showFeat(parseInt(e.target.dataset.feat));
+    startFeatSlider();
+  });
+});
+document.getElementById('feat-prev')?.addEventListener('click', () => { stopFeatSlider(); prevFeat(); startFeatSlider(); });
+document.getElementById('feat-next')?.addEventListener('click', () => { stopFeatSlider(); nextFeat(); startFeatSlider(); });
+
+// Init Animations
+window.addEventListener('DOMContentLoaded', () => {
+  startPromoSlider();
+  startFeatSlider();
+  setTimeout(() => {
+    document.querySelectorAll('.progress-fill').forEach(bar => {
+      bar.style.width = bar.getAttribute('data-width');
+    });
+  }, 300); 
+});
+
+// ─── MAGIC DATA INJECTION SCRIPT ───
+document.addEventListener("DOMContentLoaded", () => {
+    const userData = localStorage.getItem("redefine_user");
+    if (!userData) { window.location.href = "index.html"; return; }
+    
+    const user = JSON.parse(userData);
+    const firstName = user.name.split(' ')[0];
+    const initial = firstName.charAt(0).toUpperCase();
+    const userPlan = user.plan || "Free";
+
+    const hour = new Date().getHours();
+    let greetingText = "Good evening";
+    if (hour >= 5 && hour < 12) { greetingText = "Good morning"; } 
+    else if (hour >= 12 && hour < 17) { greetingText = "Good afternoon"; }
+    
+    const greetEl = document.getElementById('dynamic-greeting');
+    if(greetEl) greetEl.innerHTML = `${greetingText}, <span>${firstName}!</span> 👋`;
+
+    const sbName = document.getElementById("sb-pname");
+    if(sbName) sbName.textContent = user.name;
+    const sbLetter = document.getElementById("sb-av-letter");
+    if(sbLetter) sbLetter.textContent = initial;
+    const sbRole = document.getElementById("sb-prole");
+    if(sbRole) sbRole.textContent = `${userPlan} Plan`;
+
+    const tbName = document.getElementById("tb-uname");
+    if(tbName) tbName.textContent = firstName;
+    const tbLetter = document.getElementById("tb-av-letter2");
+    if(tbLetter) tbLetter.textContent = initial;
+
+    const ddName = document.getElementById("dd-name");
+    if(ddName) ddName.textContent = user.name;
+    const ddEmail = document.getElementById("dd-email");
+    if(ddEmail) ddEmail.textContent = user.email;
+
+    if (userPlan === 'Elite') {
+        if (sbName) sbName.style.color = 'var(--ylw)';
+        if (tbName) tbName.style.color = 'var(--ylw)';
+    }
+});
+</script>
+</body>
+</html>

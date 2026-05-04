@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>REDEFINE | Subscription</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --p:#8b7cf8;--pd:#6d5ce8;--pr:rgba(139,124,248,.2);--pg:rgba(139,124,248,.08);
+  --bg:#0a0812;--card:rgba(16,12,28,.8);
+  --border:rgba(255,255,255,.07);--borderf:rgba(139,124,248,.4);
+  --t1:#f0eeff;--t2:#a09bbf;--t3:#6b6585;
+  --grn:#34d399;--ylw:#fbbf24;--red:#f87171;
+  --r:12px;--r2:18px;--r3:24px;
+  --font:'Sora',sans-serif;
+  --sw:260px;--sh:64px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);overflow-x:hidden;min-height:100vh;}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+a{text-decoration:none;color:inherit;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;top:0;left:0;width:var(--sw);height:100vh;
+  background:rgba(10,8,20,0.85);backdrop-filter:blur(24px);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:200;
+  transition:transform .35s cubic-bezier(.25,1,.35,1);
+}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-logo h1{font-size:1.35rem;font-weight:700;letter-spacing:1.5px;}
+.sb-logo span{color:var(--p);}
+.sb-close-btn{display:none;margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;padding:4px;}
+.sb-nav{flex:1;padding:20px 10px;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{display:none;}
+.sb-section{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;padding:10px 10px 5px;}
+.sb-item{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;
+  border-radius:var(--r);cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;
+  transition:all .18s;margin-bottom:2px;border:1px solid transparent;
+}
+.sb-item:hover{background:var(--pg);color:var(--t1);}
+.sb-item.active{background:var(--pr);border-color:rgba(139,124,248,0.25);color:var(--p);}
+.sb-item svg{width:16px;height:16px;flex-shrink:0;opacity:.8;}
+.sb-item.active svg{opacity:1;}
+.sb-profile{
+  padding:12px 14px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .18s;
+}
+.sb-profile:hover{background:var(--pg);}
+.sb-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.4);flex-shrink:0;}
+.sb-av img{width:100%;height:100%;object-fit:cover;display:none;}
+.sb-pname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; transition: color 0.3s;}
+.sb-prole{font-size:10px;color:var(--t3);}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:var(--sw);right:0;height:var(--sh);
+  background:rgba(10,8,18,0.7);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;padding:0 24px;z-index:150;
+}
+.ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;}
+.ham span{display:block;width:20px;height:2px;background:var(--t2);border-radius:2px;transition:.25s;}
+.tb-search{
+  flex:1;max-width:360px;display:flex;align-items:center;gap:9px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:30px;padding:0 14px;height:38px;transition:all .2s;
+}
+.tb-search:focus-within{border-color:var(--borderf);box-shadow:0 0 0 3px rgba(139,124,248,0.12);}
+.tb-search input{background:none;border:none;outline:none;flex:1;font-family:var(--font);font-size:13px;color:var(--t1);}
+.tb-search input::placeholder{color:var(--t3);}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+/* ── NOTIFICATION BADGES (ADDED FOR INBOX SYNC) ── */
+.notif-dot{position:absolute;top:0px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--red);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;padding:0 4px; display: none;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px; display: none;}
+
+.tb-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:all .18s;position:relative;}
+.tb-btn:hover{background:var(--pg);color:var(--p);border-color:rgba(139,124,248,0.3);}
+
+.tb-profile{display:flex;align-items:center;gap:9px;cursor:pointer;padding:5px 12px;border-radius:30px;border:1px solid var(--border);background:rgba(255,255,255,0.02);transition:all .18s;position:relative;}
+.tb-profile:hover{background:var(--pg);border-color:rgba(139,124,248,0.25);}
+.tb-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.45);}
+.tb-av img{width:100%;height:100%;object-fit:cover;display:none;}
+.tb-uname{font-size:13px;font-weight:600; transition: color 0.3s;}
+
+/* Dropdown */
+.dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;min-width:210px;
+  background:rgba(14,11,26,0.98);backdrop-filter:blur(24px);
+  border:1px solid rgba(139,124,248,0.2);border-radius:var(--r2);
+  box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;
+  opacity:0;pointer-events:none;transform:translateY(-6px);
+  transition:all .22s cubic-bezier(.25,1,.35,1);z-index:300;
+}
+.dropdown.open{opacity:1;pointer-events:auto;transform:translateY(0);}
+.dd-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.dd-name{font-size:13.5px;font-weight:600;}
+.dd-email{font-size:11px;color:var(--t3);margin-top:2px;}
+.dd-item{display:flex;align-items:center;gap:11px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--t2);transition:all .15s;}
+.dd-item:hover{background:var(--pg);color:var(--t1);}
+.dd-item.danger{color:var(--red);}
+.dd-item.danger:hover{background:rgba(248,113,113,0.08);}
+.dd-sep{height:1px;background:var(--border);margin:3px 0;}
+
+/* ── MAIN CONTENT AREA ── */
+.main{margin-left:var(--sw);padding-top:var(--sh);min-height:100vh;position:relative;z-index:1; padding-bottom: 60px;}
+.overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);}
+.sub-container{max-width:1000px;margin:0 auto;padding:40px 20px;}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:64px 20px 20px;position:relative;z-index:1;}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(139,124,248,.12);border:1px solid rgba(139,124,248,.3);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--p);margin-bottom:20px;}
+.hero h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:12px;line-height:1.2;}
+.hero h1 span{background:linear-gradient(90deg,var(--p),#b06aff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{font-size:15px;color:var(--t2);max-width:520px;margin:0 auto 32px;}
+
+/* ── TOGGLE ── */
+.billing-toggle{display:inline-flex;align-items:center;gap:0;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:30px;padding:4px;margin-bottom:48px;}
+.tog-btn{padding:9px 22px;border-radius:26px;border:none;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--t3);background:none;}
+.tog-btn.active{background:var(--p);color:#fff;box-shadow:0 4px 14px rgba(139,124,248,.35);}
+.save-pill{background:rgba(52,211,153,.15);color:var(--grn);font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;margin-left:6px;}
+
+/* ── PLANS GRID ── */
+.plans-section{position:relative;z-index:1;padding:0 20px 32px;}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1000px;margin:0 auto;}
+
+.plan-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r3);
+  padding:32px 28px;
+  position:relative;overflow:hidden;
+  transition:all .25s cubic-bezier(.25,1,.35,1);
+  display:flex;flex-direction:column;
+}
+.plan-card:hover{transform:translateY(-6px);box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.plan-card.popular{border-color:rgba(139,124,248,.5);background:rgba(20,15,40,.9);}
+.plan-card.popular::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(139,124,248,.06),rgba(180,90,240,.04));
+  pointer-events:none;
+}
+.plan-card.popular::after{
+  content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:200px;height:120px;
+  background:radial-gradient(ellipse,rgba(139,124,248,.3),transparent 70%);
+  pointer-events:none;
+}
+
+.popular-badge{
+  position:absolute;top:20px;right:20px;
+  background:linear-gradient(90deg,var(--p),#b06aff);
+  color:#fff;font-size:10px;font-weight:700;
+  padding:4px 12px;border-radius:20px;
+  box-shadow:0 4px 14px rgba(139,124,248,.4);
+}
+
+.plan-name{font-size:13px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;}
+.plan-price{display:flex;align-items:flex-end;gap:4px;margin-bottom:4px;}
+.plan-price .amount{font-size:2.8rem;font-weight:700;line-height:1;color:var(--t1);}
+.plan-price .curr{font-size:1.2rem;font-weight:600;color:var(--t2);margin-bottom:6px;}
+.plan-price .period{font-size:13px;color:var(--t3);margin-bottom:6px;}
+.plan-orig{font-size:12px;color:var(--t3);text-decoration:line-through;margin-bottom:4px;}
+.plan-savings{font-size:11px;color:var(--grn);font-weight:600;margin-bottom:20px;}
+.plan-desc{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.6;}
+
+.plan-features{flex:1;display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+.feat-row{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--t2);}
+.feat-row .check{flex-shrink:0;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.feat-row .check.yes{background:rgba(52,211,153,.15);color:var(--grn);}
+.feat-row .check.no{background:rgba(255,255,255,.05);color:var(--t3);}
+.feat-row.active-feat{color:var(--t1);}
+.feat-row.inactive-feat{opacity:.5;}
+
+.plan-btn{
+  width:100%;height:46px;border-radius:var(--r);
+  font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .2s;border:none;
+}
+.btn-free{background:rgba(255,255,255,.06);color:var(--t1);border:1px solid var(--border);}
+.btn-free:hover{background:rgba(255,255,255,.1);}
+.btn-popular{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;box-shadow:0 8px 24px rgba(139,124,248,.4);}
+.btn-popular:hover{box-shadow:0 12px 32px rgba(139,124,248,.6);transform:translateY(-2px);}
+.btn-pro{background:rgba(251,191,36,.12);color:var(--ylw);border:1px solid rgba(251,191,36,.25);}
+.btn-pro:hover{background:rgba(251,191,36,.22);}
+
+/* ── CURRENT PLAN BANNER ── */
+.current-plan-banner{
+  max-width:1000px;margin:0 auto 48px;padding:0 20px;
+  position:relative;z-index:1;
+}
+.cpb-inner{
+  background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);
+  border-radius:var(--r2);padding:18px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.cpb-icon{font-size:1.5rem;}
+.cpb-text h4{font-size:14px;font-weight:700;margin-bottom:2px;}
+.cpb-text p{font-size:12px;color:var(--t2);}
+.cpb-badge{margin-left:auto;background:rgba(52,211,153,.15);color:var(--grn);font-size:11px;font-weight:700;padding:5px 12px;border-radius:12px;}
+
+/* ── COMPARISON TABLE ── */
+.compare-section{max-width:1000px;margin:0 auto;padding:20px 20px 32px;position:relative;z-index:1;}
+.compare-section h2{font-size:1.3rem;font-weight:700;margin-bottom:24px;text-align:center;}
+.compare-table{width:100%;border-collapse:separate;border-spacing:0;}
+.compare-table th{padding:14px 18px;font-size:12px;font-weight:600;color:var(--t3);text-align:left;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);}
+.compare-table th:not(:first-child){text-align:center;}
+.compare-table td{padding:13px 18px;font-size:13px;color:var(--t2);border-bottom:1px solid rgba(255,255,255,.04);}
+.compare-table td:not(:first-child){text-align:center;}
+.compare-table tr:hover td{background:rgba(139,124,248,.03);}
+.tc{color:var(--grn);}
+.tx{color:var(--t3);opacity:.5;}
+.tp{color:var(--p);font-weight:600;font-size:11px;}
+
+/* ── FAQ ── */
+.faq-section{max-width:680px;margin:0 auto;padding:20px 20px 80px;position:relative;z-index:1;}
+.faq-section h2{font-size:1.3rem;font-weight:700;margin-bottom:24px;text-align:center;}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:10px;overflow:hidden;}
+.faq-q{padding:16px 20px;cursor:pointer;font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:space-between;transition:.18s;}
+.faq-q:hover{background:var(--pg);}
+.faq-q .faq-arrow{color:var(--t3);transition:transform .25s;}
+.faq-item.open .faq-arrow{transform:rotate(180deg);}
+.faq-a{display:none;padding:0 20px 16px;font-size:13px;color:var(--t2);line-height:1.7;}
+.faq-item.open .faq-a{display:block;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:rgba(14,11,26,.97);border:1px solid rgba(52,211,153,.35);border-radius:var(--r2);padding:12px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 32px rgba(0,0,0,.5);transform:translateY(16px);opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.25,1,.35,1);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-icon{color:var(--grn);}
+.toast-msg{font-size:13px;font-weight:500;}
+
+/* ── CHECKOUT MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+.modal-overlay.show { opacity: 1; pointer-events: auto; }
+.checkout-card { background: rgba(18,14,30,0.98); border: 1px solid rgba(139,124,248,0.3); border-radius: var(--r3); padding: 35px; width: 100%; max-width: 420px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.6); text-align: center; transform: translateY(20px); transition: 0.3s cubic-bezier(0.25, 1, 0.35, 1); }
+.modal-overlay.show .checkout-card { transform: translateY(0); }
+.close-modal { position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.05); border: none; color: var(--t2); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.close-modal:hover { background: rgba(255,255,255,0.1); color: white; }
+.checkout-title { font-size: 1.5rem; font-weight: 700; color: var(--t1); margin-bottom: 5px; margin-top: 10px;}
+.checkout-desc { font-size: 13px; color: var(--t3); margin-bottom: 25px;}
+.checkout-price-box { margin: 25px 0; font-size: 3.5rem; font-weight: 700; color: var(--t1); display: flex; justify-content: center; align-items: flex-start; line-height: 1; }
+.checkout-price-box .curr { font-size: 1.8rem; color: var(--t2); margin-top: 8px; margin-right: 2px;}
+.coupon-box { display: flex; gap: 10px; margin-top: 25px; }
+.coupon-box input { flex: 1; height: 46px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--r); color: var(--t1); padding: 0 15px; outline: none; font-family: var(--font); font-size: 14px; text-transform: uppercase; }
+.coupon-box input:focus { border-color: var(--p); }
+.btn-apply { background: rgba(255,255,255,0.05); color: var(--t1); border: 1px solid var(--border); border-radius: var(--r); padding: 0 20px; cursor: pointer; font-family: var(--font); font-weight: 600; transition: 0.2s; }
+.btn-apply:hover { background: rgba(139,124,248,0.15); color: var(--p); border-color: rgba(139,124,248,0.3); }
+.pay-btn { width: 100%; height: 50px; border-radius: 30px; background: linear-gradient(135deg, var(--p), var(--pd)); color: #fff; font-family: var(--font); font-size: 15px; font-weight: 700; border: none; cursor: pointer; margin-top: 25px; transition: 0.2s; box-shadow: 0 8px 24px rgba(139,124,248,0.35); }
+.pay-btn:hover { box-shadow: 0 12px 32px rgba(139,124,248,0.5); transform: translateY(-2px); }
+
+@media(max-width:800px){.plans-grid{grid-template-columns:1fr;max-width:400px;margin:0 auto 50px;}}
+@media(max-width:600px){.compare-section{overflow-x:auto;}.compare-table{min-width:500px;}}
+@media(max-width:720px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .overlay{display:block;}
+  .topbar{left:0;}
+  .main{margin-left:0;}
+  .ham{display:flex;}
+  .tb-uname{display:none;}
+  .current-plan-banner { flex-direction: column; text-align: center; gap: 15px;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="overlay" id="sb-overlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <h1>RE<span>DEFINE</span></h1>
+    <button class="sb-close-btn" id="sb-close">✕</button>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Main Menu</div>
+    <a href="home.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Home
+    </a>
+    <a href="dashboard.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Study Hub
+    </a>
+    <a href="community.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Community
+    </a>
+    <a href="inbox.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Inbox <span class="nav-badge">3</span>
+    </a>
+    <a href="about.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> About Us
+    </a>
+    
+    <div class="sb-section" style="margin-top: 20px;">Account</div> 
+    <a href="profile.html" class="sb-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile
+    </a>
+    <a href="subscription.html" class="sb-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription
+    </a>
+    <a href="index.html" class="sb-item" style="color:var(--red);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout
+    </a>
+  </nav>
+
+  <div class="sb-profile" id="sb-profile-bottom">
+    <div class="sb-av" id="sb-av-disp"><span id="sb-av-letter">P</span><img id="sb-av-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;"/></div>
+    <div>
+      <div class="sb-pname" id="sb-pname">Prince Kumar</div>
+      <div class="sb-prole" id="sb-prole">Free Plan</div>
+    </div>
+  </div>
+</aside>
+
+<header class="topbar">
+  <button class="ham" id="ham">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="tb-search">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search across REDEFINE..."/>
+  </div>
+  
+  <div class="tb-right">
+    
+    <div class="tb-btn" onclick="location.href='inbox.html'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <div class="notif-dot">3</div>
+    </div>
+
+    <div class="tb-profile" id="tb-profile-btn">
+      <div class="tb-av" id="tb-av-disp2"><span id="tb-av-letter2">P</span><img id="tb-av-img2" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;"/></div>
+      <span class="tb-uname" id="tb-uname">Prince</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      
+      <div class="dropdown" id="profile-dd">
+        <div class="dd-head">
+          <div class="dd-name" id="dd-name">Prince Kumar</div>
+          <div class="dd-email" id="dd-email">prince@example.com</div>
+        </div>
+        <div class="dd-item" onclick="location.href='profile.html'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile
+        </div>
+        <div class="dd-item" onclick="location.href='subscription.html'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription
+        </div>
+        <div class="dd-sep"></div>
+        <div class="dd-item danger" onclick="location.href='index.html'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  
+  <div class="hero">
+    <div class="hero-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+      Upgrade your Learning
+    </div>
+    <h1>Unlock your full <span>Potential</span></h1>
+    <p>Choose the plan that fits your goals. Join thousands of students scoring 90%+ with our premium resources and expert mentorship.</p>
+    
+    <div class="billing-toggle">
+      <button class="tog-btn active" id="btn-monthly">Monthly</button>
+      <button class="tog-btn" id="btn-yearly">Yearly <span class="save-pill">SAVE 20%</span></button>
+    </div>
+  </div>
+
+  <div class="current-plan-banner" style="display:none;" id="cp-banner">
+    <div class="cpb-inner">
+      <div class="cpb-icon">✨</div>
+      <div class="cpb-text">
+        <h4 id="cpb-title">You are on the Basic Plan</h4>
+        <p id="cpb-desc">Upgrade to unlock full PDFs and ad-free studying.</p>
+      </div>
+      <div class="cpb-badge" id="cpb-badge">Current Plan</div>
+    </div>
+  </div>
+
+  <div class="plans-section">
+    <div class="plans-grid">
+      
+      <div class="plan-card">
+        <div class="plan-name">Basic Learner</div>
+        <div class="plan-price">
+          <span class="curr">₹</span><span class="amount">0</span><span class="period">/mo</span>
+        </div>
+        <div class="plan-desc">Perfect for students starting out, with access to essential community features.</div>
+        
+        <div class="plan-features">
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Community Forum Access
+          </div>
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Basic Chapter Summaries
+          </div>
+          <div class="feat-row inactive-feat">
+            <div class="check no"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            Full PDF Downloads
+          </div>
+          <div class="feat-row inactive-feat">
+            <div class="check no"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            Ad-Free Experience
+          </div>
+          <div class="feat-row inactive-feat">
+            <div class="check no"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            1-on-1 Mentorship
+          </div>
+        </div>
+        
+        <button class="plan-btn btn-free" id="btn-free">Current Plan</button>
+      </div>
+
+      <div class="plan-card popular">
+        <div class="popular-badge">MOST POPULAR</div>
+        <div class="plan-name" style="color:var(--p);">Pro Scholar</div>
+        
+        <div class="plan-price">
+          <span class="curr">₹</span><span class="amount" id="price-pro">299</span><span class="period" id="period-pro">/mo</span>
+        </div>
+        <div class="plan-orig" id="orig-pro" style="display:none;">₹3,588 /yr</div>
+        <div class="plan-savings" id="save-pro" style="display:none;">Save ₹598/yr</div>
+        
+        <div class="plan-desc">Everything you need to score 90%+ with unlimited resources and no ads.</div>
+        
+        <div class="plan-features">
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Everything in Basic
+          </div>
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Unlimited PDF Downloads
+          </div>
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Complete PYQ Solutions
+          </div>
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Ad-Free Experience
+          </div>
+          <div class="feat-row inactive-feat">
+            <div class="check no"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            1-on-1 Mentorship
+          </div>
+        </div>
+        
+        <button class="plan-btn btn-popular" onclick="openCheckout('Pro')">Get Pro</button>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-name" style="color:var(--ylw);">Elite Topper</div>
+        
+        <div class="plan-price">
+          <span class="curr">₹</span><span class="amount" id="price-elite">799</span><span class="period" id="period-elite">/mo</span>
+        </div>
+        <div class="plan-orig" id="orig-elite" style="display:none;">₹9,588 /yr</div>
+        <div class="plan-savings" id="save-elite" style="display:none;">Save ₹1,598/yr</div>
+        
+        <div class="plan-desc">Ultimate resources for JEE/NEET, including 24/7 doubts and live mentors.</div>
+        
+        <div class="plan-features">
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Everything in Pro
+          </div>
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            24/7 AI Doubt Solver
+          </div>
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            1-on-1 Mentor Sessions
+          </div>
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Live Masterclasses
+          </div>
+          <div class="feat-row active-feat">
+            <div class="check yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            Gold Profile Badge
+          </div>
+        </div>
+        
+        <button class="plan-btn btn-pro" onclick="openCheckout('Elite')">Get Elite</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="compare-section">
+    <h2>Compare Features</h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Features</th>
+          <th>Basic</th>
+          <th>Pro</th>
+          <th>Elite</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Community Access</td>
+          <td class="tc">✔</td>
+          <td class="tc">✔</td>
+          <td class="tc">✔</td>
+        </tr>
+        <tr>
+          <td>Chapter Summaries</td>
+          <td class="tc">✔</td>
+          <td class="tc">✔</td>
+          <td class="tc">✔</td>
+        </tr>
+        <tr>
+          <td>Full PDF Downloads</td>
+          <td class="tx">✕</td>
+          <td class="tc">✔</td>
+          <td class="tc">✔</td>
+        </tr>
+        <tr>
+          <td>Ad-Free Experience</td>
+          <td class="tx">✕</td>
+          <td class="tc">✔</td>
+          <td class="tc">✔</td>
+        </tr>
+        <tr>
+          <td>PYQ Solutions</td>
+          <td class="tx">✕</td>
+          <td class="tc">✔</td>
+          <td class="tc">✔</td>
+        </tr>
+        <tr>
+          <td>AI Doubt Solver</td>
+          <td class="tx">✕</td>
+          <td class="tx">✕</td>
+          <td class="tc">✔</td>
+        </tr>
+        <tr>
+          <td>1-on-1 Mentorship</td>
+          <td class="tx">✕</td>
+          <td class="tx">✕</td>
+          <td class="tc">✔</td>
+        </tr>
+        <tr>
+          <td>Profile Badge</td>
+          <td class="tx">None</td>
+          <td class="tp" style="color:var(--twitter-blue);">Blue Tick</td>
+          <td class="tp" style="color:var(--ylw);">Gold Tick</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    
+    <div class="faq-item">
+      <div class="faq-q">Can I cancel my subscription anytime? <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a">Yes, you can cancel your subscription at any time from your account settings. You will retain access to your premium features until the end of your current billing cycle.</div>
+    </div>
+    
+    <div class="faq-item">
+      <div class="faq-q">What payment methods do you accept? <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a">We accept all major credit and debit cards, UPI (Google Pay, PhonePe, Paytm), and Net Banking. All payments are processed securely.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How does the 1-on-1 mentorship work? <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a">Elite Topper members get 4 live video sessions (45 mins each) per month with expert tutors. You can book these sessions at your convenience through the dashboard to clear doubts or plan your study schedule.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Is there a refund policy? <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+      <div class="faq-a">We offer a 7-day money-back guarantee for all new subscriptions. If you are not satisfied with the platform, simply contact our support team within 7 days for a full refund.</div>
+    </div>
+  </div>
+
+</main>
+
+<div class="modal-overlay" id="checkout-modal">
+  <div class="checkout-card">
+    <button class="close-modal" onclick="closeCheckout()">✕</button>
+    <div style="width:50px;height:50px;border-radius:14px;background:rgba(139,124,248,.15);color:var(--p);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 15px;">🔒</div>
+    <h3 class="checkout-title">Complete Upgrade</h3>
+    <p class="checkout-desc">You are upgrading to the <strong id="co-plan-name" style="color:var(--t1);">Pro</strong> plan.</p>
+    
+    <div class="checkout-price-box">
+      <span class="curr">₹</span><span id="co-price">299</span>
+    </div>
+    <p style="font-size:12px;color:var(--t3);margin-top:-15px;margin-bottom:20px;" id="co-billing-text">Billed securely via Razorpay</p>
+
+    <div class="coupon-box">
+      <input type="text" placeholder="Promo Code" id="coupon-input"/>
+      <button class="btn-apply" onclick="applyCoupon()">Apply</button>
+    </div>
+
+    <button class="pay-btn" onclick="processPayment()">Pay Securely</button>
+    <p style="font-size:11px;color:var(--t3);margin-top:15px;display:flex;align-items:center;justify-content:center;gap:6px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> 256-bit Encryption
+    </p>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span class="toast-msg" id="toast-msg">Success!</span></div>
+
+<script>
+// ── PURE DARK BACKGROUND ──
+(function(){var c=document.getElementById('bg-canvas'),ctx=c.getContext('2d'),W,H;function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}window.addEventListener('resize',resize);resize();var PAL=[[139,124,248],[109,92,232],[180,90,240],[80,140,255]];function Orb(){this.init();}Orb.prototype.init=function(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=100+Math.random()*220;this.vx=(Math.random()-.5)*.15;this.vy=(Math.random()-.5)*.15;this.c=PAL[Math.floor(Math.random()*PAL.length)];this.a=.04+Math.random()*.07;};Orb.prototype.update=function(t){this.x+=this.vx;this.y+=this.vy;if(this.x<-this.r||this.x>W+this.r||this.y<-this.r||this.y>H+this.r)this.init();};Orb.prototype.draw=function(){var g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);g.addColorStop(0,'rgba('+this.c+','+this.a+')');g.addColorStop(1,'rgba('+this.c+',0)');ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();};var orbs=[];for(var i=0;i<10;i++){var o=new Orb();o.x=Math.random()*W;o.y=Math.random()*H;orbs.push(o);}function drawGrid(){ctx.save();ctx.strokeStyle='rgba(139,124,248,.035)';ctx.lineWidth=1;for(var x=0;x<W;x+=56){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(var y=0;y<H;y+=56){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}ctx.restore();}var t=0;function loop(){t++;ctx.clearRect(0,0,W,H);ctx.fillStyle='#0a0812';ctx.fillRect(0,0,W,H);drawGrid();orbs.forEach(function(o){o.update(t);o.draw();});requestAnimationFrame(loop);}loop();})();
+
+// Sidebar & Modals
+document.getElementById('ham').addEventListener('click', () => {document.querySelector('.sidebar').style.transform = 'translateX(0)';document.getElementById('sb-overlay').style.display='block';});
+document.getElementById('sb-overlay').addEventListener('click', () => {document.querySelector('.sidebar').style.transform = 'translateX(-100%)';document.getElementById('sb-overlay').style.display='none';});
+
+var ddOpen = false;var dd = document.getElementById('profile-dd');
+document.getElementById('tb-profile-btn').addEventListener('click', (e) => { e.stopPropagation(); ddOpen ? (dd.classList.remove('open'),ddOpen=false) : (dd.classList.add('open'),ddOpen=true); });
+document.addEventListener('click', () => { if(ddOpen){dd.classList.remove('open');ddOpen=false;} });
+
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const parent = q.parentElement;
+    parent.classList.toggle('open');
+  });
+});
+
+function showToast(msg, err=false){
+  var t=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
+  t.style.borderColor=err?'rgba(248,113,113,.35)':'rgba(52,211,153,.35)'; t.querySelector('.toast-icon').style.color=err?'#f87171':'#34d399';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ── NOTIFICATION SYNC ──
+let notifCount = localStorage.getItem('redefine_notif_count');
+if (notifCount === null) { notifCount = "3"; localStorage.setItem('redefine_notif_count', notifCount); }
+function updateNotifBadges() {
+    const count = parseInt(localStorage.getItem('redefine_notif_count') || "0");
+    document.querySelectorAll('.notif-dot').forEach(el => {
+        if(count > 0) { el.style.display = 'flex'; el.textContent = count > 9 ? '9+' : count; }
+        else { el.style.display = 'none'; }
+    });
+    document.querySelectorAll('.nav-badge').forEach(el => {
+        if(count > 0) { el.style.display = 'inline-block'; el.textContent = count > 9 ? '9+' : count; }
+        else { el.style.display = 'none'; }
+    });
+}
+updateNotifBadges();
+
+// ── PROFILE DATA INJECTION ──
+document.addEventListener("DOMContentLoaded", () => {
+    const userData = localStorage.getItem("redefine_user");
+    if (!userData) { window.location.href = "index.html"; return; }
+    
+    const user = JSON.parse(userData);
+    const firstName = user.name.split(' ')[0];
+    const initial = firstName.charAt(0).toUpperCase();
+    const userPlan = user.plan || "Free";
+
+    const sbName = document.getElementById("sb-pname");
+    if(sbName) sbName.textContent = user.name;
+    const sbLetter = document.getElementById("sb-av-letter");
+    if(sbLetter) sbLetter.textContent = initial;
+    const sbRole = document.getElementById("sb-prole");
+    if(sbRole) sbRole.textContent = `${userPlan} Plan`;
+
+    const tbName = document.getElementById("tb-uname");
+    if(tbName) tbName.textContent = firstName;
+    const tbLetter = document.getElementById("tb-av-letter2");
+    if(tbLetter) tbLetter.textContent = initial;
+
+    const ddName = document.getElementById("dd-name");
+    if(ddName) ddName.textContent = user.name;
+    const ddEmail = document.getElementById("dd-email");
+    if(ddEmail) ddEmail.textContent = user.email;
+
+    if (userPlan !== "Free") {
+        document.getElementById('cp-banner').style.display = "flex";
+        document.getElementById('cpb-title').textContent = `You are on the ${userPlan} Plan`;
+        if (userPlan === 'Pro') document.getElementById('cpb-desc').textContent = "Enjoy unlimited PDF downloads and an ad-free experience.";
+        if (userPlan === 'Elite') document.getElementById('cpb-desc').textContent = "Enjoy 24/7 AI Doubt Solving and 1-on-1 Mentorship!";
+        
+        if (userPlan === 'Elite') {
+            document.getElementById("sb-pname").style.color = 'var(--ylw)';
+            document.getElementById("tb-uname").style.color = 'var(--ylw)';
+        }
+    }
+});
+
+// ── TOGGLE & CHECKOUT LOGIC ──
+let isYearly = false;
+let selectedPlan = "";
+let currentPrice = 0;
+
+document.getElementById('btn-monthly').addEventListener('click', () => { setBilling(false); });
+document.getElementById('btn-yearly').addEventListener('click', () => { setBilling(true); });
+
+function setBilling(yearly) {
+    isYearly = yearly;
+    if(yearly) {
+        document.getElementById('btn-yearly').classList.add('active');
+        document.getElementById('btn-monthly').classList.remove('active');
+        document.getElementById('price-pro').textContent = "2,990";
+        document.getElementById('period-pro').textContent = "/yr";
+        document.getElementById('orig-pro').style.display = "block";
+        document.getElementById('save-pro').style.display = "block";
+        
+        document.getElementById('price-elite').textContent = "7,990";
+        document.getElementById('period-elite').textContent = "/yr";
+        document.getElementById('orig-elite').style.display = "block";
+        document.getElementById('save-elite').style.display = "block";
+    } else {
+        document.getElementById('btn-monthly').classList.add('active');
+        document.getElementById('btn-yearly').classList.remove('active');
+        document.getElementById('price-pro').textContent = "299";
+        document.getElementById('period-pro').textContent = "/mo";
+        document.getElementById('orig-pro').style.display = "none";
+        document.getElementById('save-pro').style.display = "none";
+        
+        document.getElementById('price-elite').textContent = "799";
+        document.getElementById('period-elite').textContent = "/mo";
+        document.getElementById('orig-elite').style.display = "none";
+        document.getElementById('save-elite').style.display = "none";
+    }
+}
+
+function openCheckout(plan) {
+    selectedPlan = plan;
+    document.getElementById('co-plan-name').textContent = plan;
+    if (plan === 'Pro') {
+        document.getElementById('co-plan-name').style.color = 'var(--p)';
+        currentPrice = isYearly ? 2990 : 299;
+    } else {
+        document.getElementById('co-plan-name').style.color = 'var(--ylw)';
+        currentPrice = isYearly ? 7990 : 799;
+    }
+    document.getElementById('co-price').textContent = currentPrice;
+    document.getElementById('co-billing-text').textContent = isYearly ? "Billed annually securely via Razorpay" : "Billed monthly securely via Razorpay";
+    document.getElementById('checkout-modal').classList.add('show');
+}
+
+function closeCheckout() {
+    document.getElementById('checkout-modal').classList.remove('show');
+    document.getElementById('coupon-input').value = "";
+}
+
+function applyCoupon() {
+    const val = document.getElementById('coupon-input').value.trim().toUpperCase();
+    if(val === 'REDEFINE20') {
+        const discounted = Math.floor(currentPrice * 0.8);
+        document.getElementById('co-price').textContent = discounted;
+        showToast('Coupon Applied! 20% Off');
+    } else {
+        showToast('Invalid Coupon Code', true);
+    }
+}
+
+function processPayment() {
+    showToast('Processing Payment...');
+    setTimeout(() => {
+        const userData = JSON.parse(localStorage.getItem("redefine_user"));
+        userData.plan = selectedPlan;
+        localStorage.setItem("redefine_user", JSON.stringify(userData));
+        closeCheckout();
+        alert(`Payment Successful! Welcome to the ${selectedPlan} Plan!`);
+        location.reload();
+    }, 1500);
+}
+</script>
+</body>
+</html>
