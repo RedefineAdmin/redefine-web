@@ -8,7 +8,6 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-/* ── PURE DARK THEME VARIABLES ── */
 :root{
   --p:#8b7cf8; --pd:#6d5ce8; --pr:rgba(139,124,248,0.18); --pg:rgba(139,124,248,0.08);
   --bg:#0a0812; --bg2:rgba(14,11,26,0.97); --card:rgba(18,14,30,0.7);
@@ -147,9 +146,6 @@ a{text-decoration:none;color:inherit;}
 .t-action.like:hover svg {background: rgba(249, 24, 128, 0.1);}
 .t-action.like.active svg {fill: var(--pink);stroke: var(--pink);}
 
-@keyframes dropIn { 0% { opacity: 0; transform: translateY(-20px); background: rgba(29, 155, 240, 0.1); } 100% { opacity: 1; transform: translateY(0); background: transparent; } }
-.new-tweet-anim { animation: dropIn 0.5s ease-out forwards; }
-
 /* FAB */
 .fab-container {position: fixed;bottom: 40px;right: 40px;z-index: 100;display: flex;flex-direction: column;align-items: flex-end;gap: 15px;}
 .fab-menu {display: flex;flex-direction: column;gap: 12px;opacity: 0;pointer-events: none;transform: translateY(20px);transition: all 0.3s cubic-bezier(0.25, 1, 0.35, 1);}
@@ -160,7 +156,7 @@ a{text-decoration:none;color:inherit;}
 .fab-post:hover {background: #1a8cd8;transform: scale(1.05);}
 .fab-post.active {transform: rotate(45deg);background: var(--card);border: 1px solid var(--border);color: var(--t1);}
 
-/* Sidebar Widgets (RESTORED TRENDING TAB WITH SEARCH ICON & STATS) */
+/* Sidebar Widgets */
 .twitter-sidebar {width: 350px;padding: 0;flex-shrink: 0;height: 100%;overflow-y: auto;scrollbar-width: none;}
 .twitter-sidebar::-webkit-scrollbar {display: none;}
 .twitter-widget {background: var(--card);border: 1px solid var(--border);border-radius: var(--r2);padding: 20px;margin-bottom: 20px;}
@@ -339,9 +335,6 @@ function showToast(msg, err=false){
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ── NOTIFICATION SYNC ──
-let notifCount = localStorage.getItem('redefine_notif_count');
-if (notifCount === null) { notifCount = "3"; localStorage.setItem('redefine_notif_count', notifCount); }
 function updateNotifBadges() {
     const count = parseInt(localStorage.getItem('redefine_notif_count') || "0");
     document.querySelectorAll('.notif-dot').forEach(el => {
@@ -358,6 +351,20 @@ updateNotifBadges();
 let currentUser = null;
 let allTweets = [];
 const API_URL = 'http://127.0.0.1:3000/api';
+
+function timeAgo(dateString) {
+    if (!dateString) return "Just now";
+    const date = new Date(dateString + 'Z'); 
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + "m";
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + "h";
+    const days = Math.floor(hours / 24);
+    if (days < 7) return days + "d";
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
     const userData = localStorage.getItem("redefine_user");
@@ -394,6 +401,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     function renderFeed() {
         tweetsContainer.innerHTML = "";
         allTweets.forEach((tweet) => {
+            const displayTime = tweet.timestamp ? timeAgo(tweet.timestamp) : tweet.time; 
             const tick = tweet.verified ? `<span class="tweet-verified" style="margin-left:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>` : '';
             const isMine = tweet.username === currentUser.username;
             
@@ -409,7 +417,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                       <div class="tweet-header-info">
                           <span class="tweet-name" onclick="location.href='user-profile.html?u=${tweet.username}'">${tweet.name}</span>${tick}
                           <span class="tweet-handle">@${tweet.username}</span>
-                          <span class="tweet-time">· ${tweet.time}</span>
+                          <span class="tweet-time">· ${displayTime}</span>
                       </div>
                       <div class="tweet-more" onclick="toggleTweetMenu(event, ${tweet.id})">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>

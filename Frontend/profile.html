@@ -8,7 +8,6 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-/* ── PURE DARK THEME VARIABLES ── */
 :root{
   --p:#8b7cf8; --pd:#6d5ce8; --pr:rgba(139,124,248,0.18); --pg:rgba(139,124,248,0.08);
   --bg:#0a0812; --bg2:rgba(14,11,26,0.97); --card:rgba(18,14,30,0.7);
@@ -234,7 +233,7 @@ a{text-decoration:none;color:inherit;}
       <div class="tb-av" id="tb-av-disp2"><span id="tb-av-letter2">P</span></div>
       <span class="tb-uname" id="tb-uname">User</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       <div class="dropdown" id="profile-dd">
-        <div class="dd-head"><div class="dd-name" id="dd-name">User</div><div class="dd-email" id="dd-email">email@example.com</div></div>
+        <div class="dd-head"><div class="dd-name" id="dd-name">User Name</div><div class="dd-email" id="dd-email">user@example.com</div></div>
         <div class="dd-item" onclick="location.href='profile.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile</div>
         <div class="dd-item" onclick="location.href='subscription.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription</div>
         <div class="dd-sep"></div>
@@ -403,6 +402,21 @@ function updateNotifBadges() {
 }
 updateNotifBadges();
 
+// ── TIME MATH LOGIC ──
+function timeAgo(dateString) {
+    if (!dateString) return "Just now";
+    const date = new Date(dateString + 'Z'); 
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + "m";
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + "h";
+    const days = Math.floor(hours / 24);
+    if (days < 7) return days + "d";
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 // ── DB & PROFILE INJECTION ──
 let currentUser = null;
 let allTweets = [];
@@ -454,7 +468,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("pf-email").value = currentUser.email;
     document.getElementById("pf-username").value = currentUser.username;
 
-    // Fetch DB
     const container = document.getElementById('profile-tweets-container');
 
     async function loadFeed() {
@@ -472,6 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             container.innerHTML = "";
             myTweets.forEach(tweet => {
+                const displayTime = tweet.timestamp ? timeAgo(tweet.timestamp) : tweet.time;
                 const tick = tweet.verified ? `<span class="tweet-verified" style="margin-left:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>` : '';
                 const menuHTML = `<div class="tm-item danger" onclick="deleteTweet(${tweet.id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg> Delete post</div>`;
 
@@ -483,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
                           <div class="tweet-header-info">
                               <span class="tweet-name">${tweet.name}</span>${tick}
                               <span class="tweet-handle">@${tweet.username}</span>
-                              <span class="tweet-time">· ${tweet.time}</span>
+                              <span class="tweet-time">· ${displayTime}</span>
                           </div>
                           <div class="tweet-more" onclick="toggleTweetMenu(event, ${tweet.id})">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
@@ -506,8 +520,26 @@ document.addEventListener("DOMContentLoaded", () => {
     
     window.toggleTweetMenu = function(e, id) { e.stopPropagation(); closeAllTweetMenus(); document.getElementById(`menu-${id}`).classList.toggle('open'); };
     window.deleteTweet = async function(id) { await fetch(`${API_URL}/tweets/${id}`, { method: 'DELETE' }); await loadFeed(); };
-    window.toggleLike = async function(id) { const t = allTweets.find(t => t.id === id); if(t) { t.hasLiked = !t.hasLiked; t.likes += t.hasLiked ? 1 : -1; renderFeed(); await fetch(`${API_URL}/tweets/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: t.hasLiked }) }); } };
-    window.toggleRT = async function(id) { const t = allTweets.find(t => t.id === id); if(t) { t.hasRT = !t.hasRT; t.rt += t.hasRT ? 1 : -1; renderFeed(); await fetch(`${API_URL}/tweets/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: t.hasRT }) }); } };
+
+    window.toggleLike = async function(id) {
+        const t = allTweets.find(t => t.id === id);
+        if(t) {
+            t.hasLiked = !t.hasLiked;
+            t.likes += t.hasLiked ? 1 : -1;
+            renderFeed();
+            await fetch(`${API_URL}/tweets/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: t.hasLiked }) });
+        }
+    };
+
+    window.toggleRT = async function(id) {
+        const t = allTweets.find(t => t.id === id);
+        if(t) {
+            t.hasRT = !t.hasRT;
+            t.rt += t.hasRT ? 1 : -1;
+            renderFeed();
+            await fetch(`${API_URL}/tweets/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: t.hasRT }) });
+        }
+    };
 
     loadFeed();
 });
