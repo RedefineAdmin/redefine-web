@@ -6,15 +6,15 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Middleware
+app.use(cors({ origin: '*' }));
 app.use(express.json());
-
-// 🌟 THE MAGIC LINE: This lets your backend host your HTML directly!
 app.use(express.static(__dirname)); 
 
-// ─── EMAIL TRANSPORTER SETUP ───
+// ─── EMAIL TRANSPORTER ───
+// Note: Hardcoding credentials is a security risk. In production, move these to a .env file.
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -23,177 +23,220 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// ─── DATABASE INITIALIZATION ───
 const db = new sqlite3.Database(path.join(__dirname, 'redefine.db'), (err) => {
-    if (err) console.error("Database error: ", err.message);
-    else console.log("✅ Connected to the SQLite database.");
+    if (err) {
+        console.error("❌ Database connection error:", err.message);
+        process.exit(1);
+    }
+    console.log("✅ Connected to SQLite database.");
+    initializeSchema();
 });
 
-// 1. The main users table
-db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    fullName TEXT,
-    email TEXT UNIQUE,
-    phone TEXT UNIQUE,
-    username TEXT UNIQUE,
-    password TEXT,
-    isVerified INTEGER DEFAULT 1
-)`);
+function initializeSchema() {
+    db.serialize(() => {
+        // 1. Users Table
+        db.run(`CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fullName TEXT, email TEXT UNIQUE, phone TEXT UNIQUE,
+            username TEXT UNIQUE, password TEXT, isVerified INTEGER DEFAULT 1
+        )`);
 
-// 2. A temporary table just to hold OTPs while they sign up or reset
-db.run(`CREATE TABLE IF NOT EXISTS pending_otps (
-    email TEXT PRIMARY KEY,
-    otpCode TEXT
-)`);
+        // 2. Pending OTPs
+        db.run(`CREATE TABLE IF NOT EXISTS pending_otps (
+            email TEXT PRIMARY KEY, otpCode TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
 
-// ─── API ENDPOINT 1: SEND OTP ONLY ───
-app.post('/api/send-otp', (req, res) => {
-    const { email } = req.body;
+        // 3. Tweets (Community Posts)
+        db.run(`CREATE TABLE IF NOT EXISTS tweets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT, username TEXT, avatar TEXT, color TEXT, verified INTEGER DEFAULT 0,
+            time TEXT, text TEXT, views TEXT DEFAULT '0', likes INTEGER DEFAULT 0,
+            hasLiked INTEGER DEFAULT 0, rt INTEGER DEFAULT 0, hasRT INTEGER DEFAULT 0,
+            replies INTEGER DEFAULT 0, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
 
-    db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, row) => {
-        if (row) return res.status(400).json({ success: false, message: "Email is already registered. Please sign in.", field: "su-email" });
+        // 4. Replies Table (NEW: Fixes the missing comments issue)
+        db.run(`CREATE TABLE IF NOT EXISTS replies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tweetId INTEGER NOT NULL,
+            name TEXT, username TEXT, avatar TEXT, color TEXT, verified INTEGER DEFAULT 0,
+            time TEXT, text TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (tweetId) REFERENCES tweets(id) ON DELETE CASCADE
+        )`);
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-        db.run(`INSERT OR REPLACE INTO pending_otps (email, otpCode) VALUES (?, ?)`, [email, otp], (err) => {
-            if (err) return res.status(500).json({ success: false, message: "Database error." });
-
-            const mailOptions = {
-                from: 'REDEFINE Study Hub',
-                to: email,
-                subject: 'Your REDEFINE Verification Code',
-                html: `<h2>Welcome to REDEFINE!</h2>
-                       <p>Your 6-digit verification code is: <strong style="font-size: 24px; letter-spacing: 2px;">${otp}</strong></p>
-                       <p>Enter this code to complete your signup.</p>`
-            };
-
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) return res.status(500).json({ success: false, message: "Failed to send email.", field: "su-email" });
-                res.status(200).json({ success: true, message: "OTP sent to email!" });
-            });
+        // Safe Migration: Ensure existing 'tweets' table has a 'replies' column
+        db.run(`ALTER TABLE tweets ADD COLUMN replies INTEGER DEFAULT 0`, (err) => {
+            // Ignore error if column already exists; standard SQLite limitation workaround
         });
     });
-});
+}
 
-// ─── API ENDPOINT 1.5: CHECK OTP EARLY ───
-app.post('/api/check-otp', (req, res) => {
-    const { email, otp } = req.body;
-    db.get(`SELECT * FROM pending_otps WHERE email = ?`, [email], (err, pendingRow) => {
-        if (!pendingRow) return res.status(400).json({ success: false, message: "Please click 'Get OTP' first.", field: "su-email" });
-        if (pendingRow.otpCode !== otp) return res.status(400).json({ success: false, message: "Invalid OTP code.", field: "otp" });
-        
-        res.status(200).json({ success: true, message: "OTP verified!" });
-    });
-});
+// ==========================================
+// ─── AUTHENTICATION APIs ───
+// ==========================================
 
-// ─── API ENDPOINT 2: VERIFY & SIGN UP ───
+// Helper: Generate OTP
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
 app.post('/api/signup', async (req, res) => {
-    let { fullName, email, phone, username, password, otp } = req.body;
+    const { fullName, email, phone, username, password } = req.body;
+    
+    // Check if user exists
+    db.get(`SELECT * FROM users WHERE email = ? OR username = ?`, [email, username], async (err, row) => {
+        if (err) return res.status(500).json({ success: false, message: "Database error" });
+        if (row) return res.status(400).json({ success: false, message: "Email or Username already exists" });
 
-    if (username && username.startsWith('@')) username = username.substring(1);
-
-    db.get(`SELECT * FROM pending_otps WHERE email = ?`, [email], (err, pendingRow) => {
-        if (!pendingRow) return res.status(400).json({ success: false, message: "Please click 'Get OTP' first.", field: "su-email" });
-        if (pendingRow.otpCode !== otp) return res.status(400).json({ success: false, message: "Invalid OTP code.", field: "otp" });
-
-        db.get(`SELECT * FROM users WHERE phone = ? OR username = ?`, [phone, username], async (err, row) => {
-            if (row) {
-                if (row.phone === phone) return res.status(400).json({ success: false, message: "Phone number is already in use.", field: "su-phone" });
-                if (row.username === username) return res.status(400).json({ success: false, message: "Username is already taken.", field: "su-username" });
-            }
-
-            try {
-                const hashedPassword = await bcrypt.hash(password, 10);
-                db.run(`INSERT INTO users (fullName, email, phone, username, password, isVerified) VALUES (?, ?, ?, ?, ?, 1)`, 
-                    [fullName, email, phone, username, hashedPassword], 
-                    function(err) {
-                        if (err) return res.status(500).json({ success: false, message: "Failed to save user." });
-                        db.run(`DELETE FROM pending_otps WHERE email = ?`, [email]);
-                        res.status(201).json({ success: true, message: "Account created successfully!" });
-                    }
-                );
-            } catch (error) {
-                res.status(500).json({ success: false, message: "Server error." });
-            }
-        });
-    });
-});
-
-// ─── API ENDPOINT 3: LOGIN ───
-app.post('/api/login', (req, res) => {
-    let { loginId, password } = req.body; 
-
-    if (loginId && loginId.startsWith('@')) loginId = loginId.substring(1);
-
-    db.get(`SELECT * FROM users WHERE email = ? OR phone = ? OR username = ?`, [loginId, loginId, loginId], async (err, user) => {
-        if (!user) return res.status(400).json({ success: false, message: "Account not found. Please check your details.", field: "login-id" });
-
-        const passwordMatch = await bcrypt.compare(password, user.password);
-
-        if (passwordMatch) {
-            res.status(200).json({ 
-                success: true, 
-                message: "Login successful!",
-                user: { name: user.fullName, email: user.email, username: user.username, phone: user.phone } 
-            });
-        } else {
-            return res.status(400).json({ success: false, message: "Incorrect password.", field: "login-pw" });
-        }
-    });
-});
-
-// ─── API ENDPOINT 4: REQUEST PASSWORD RESET OTP ───
-app.post('/api/forgot-password', (req, res) => {
-    const { email } = req.body;
-
-    db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, user) => {
-        if (!user) return res.status(400).json({ success: false, message: "No account found with this email.", field: "fp-email" });
-
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
+        const otp = generateOTP();
         db.run(`INSERT OR REPLACE INTO pending_otps (email, otpCode) VALUES (?, ?)`, [email, otp], (err) => {
-            if (err) return res.status(500).json({ success: false, message: "Database error." });
-
-            const mailOptions = {
-                from: 'REDEFINE Study Hub',
+            if (err) return res.status(500).json({ success: false, message: "Failed to generate OTP" });
+            
+            transporter.sendMail({
+                from: 'connect.thecreatorslinkup@gmail.com',
                 to: email,
-                subject: 'Password Reset Request',
-                html: `<h2>Password Reset</h2>
-                       <p>We received a request to reset your password for REDEFINE.</p>
-                       <p>Your 6-digit reset code is: <strong style="font-size: 24px; letter-spacing: 2px;">${otp}</strong></p>
-                       <p>If you did not request this, please ignore this email.</p>`
-            };
-
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) return res.status(500).json({ success: false, message: "Failed to send email.", field: "fp-email" });
-                res.status(200).json({ success: true, message: "Reset OTP sent to email!" });
+                subject: 'Redefine - Verification Code',
+                text: `Your Redefine verification code is: ${otp}`
+            }, (mailErr) => {
+                if (mailErr) return res.status(500).json({ success: false, message: "Failed to send email" });
+                res.status(200).json({ success: true, message: "OTP sent successfully" });
             });
         });
     });
 });
 
-// ─── API ENDPOINT 5: VERIFY OTP & CHANGE PASSWORD ───
-app.post('/api/reset-password', async (req, res) => {
-    const { email, otp, newPassword } = req.body;
+app.post('/api/verify-otp', async (req, res) => {
+    const { fullName, email, phone, username, password, otp } = req.body;
 
-    db.get(`SELECT * FROM pending_otps WHERE email = ?`, [email], async (err, pendingRow) => {
-        if (!pendingRow) return res.status(400).json({ success: false, message: "Session expired. Request a new OTP.", field: "fp-email" });
-        if (pendingRow.otpCode !== otp) return res.status(400).json({ success: false, message: "Invalid OTP code.", field: "fp-otp" });
+    db.get(`SELECT * FROM pending_otps WHERE email = ?`, [email], async (err, row) => {
+        if (err || !row) return res.status(400).json({ success: false, message: "OTP Session expired" });
+        if (row.otpCode !== otp) return res.status(400).json({ success: false, message: "Invalid OTP" });
 
         try {
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-            db.run(`UPDATE users SET password = ? WHERE email = ?`, [hashedPassword, email], function(err) {
-                if (err) return res.status(500).json({ success: false, message: "Failed to update password." });
-                
-                db.run(`DELETE FROM pending_otps WHERE email = ?`, [email]);
-                res.status(200).json({ success: true, message: "Password updated successfully!" });
-            });
+            const hashedPassword = await bcrypt.hash(password, 10);
+            db.run(`INSERT INTO users (fullName, email, phone, username, password) VALUES (?, ?, ?, ?, ?)`,
+                [fullName, email, phone, username, hashedPassword], function(err) {
+                    if (err) return res.status(500).json({ success: false, message: "Registration failed" });
+                    
+                    db.run(`DELETE FROM pending_otps WHERE email = ?`, [email]);
+                    res.status(200).json({ 
+                        success: true, 
+                        user: { id: this.lastID, name: fullName, username, email, phone } 
+                    });
+                }
+            );
         } catch (error) {
-            res.status(500).json({ success: false, message: "Server error during encryption." });
+            res.status(500).json({ success: false, message: "Server configuration error" });
         }
+    });
+});
+
+app.post('/api/login', (req, res) => {
+    const { identifier, password } = req.body;
+    db.get(`SELECT * FROM users WHERE email = ? OR username = ?`, [identifier, identifier], async (err, user) => {
+        if (err) return res.status(500).json({ success: false, message: "Database error" });
+        if (!user) return res.status(400).json({ success: false, message: "User not found" });
+
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) return res.status(400).json({ success: false, message: "Incorrect password" });
+
+        res.status(200).json({ 
+            success: true, 
+            user: { id: user.id, name: user.fullName, username: user.username, email: user.email, phone: user.phone } 
+        });
+    });
+});
+
+// ==========================================
+// ─── COMMUNITY TWEETS & REPLIES APIs ───
+// ==========================================
+
+// Get all posts for feed
+app.get('/api/tweets', (req, res) => {
+    db.all(`SELECT * FROM tweets ORDER BY timestamp DESC`, [], (err, rows) => {
+        if (err) return res.status(500).json({ success: false, message: "Failed to fetch feed" });
+        res.json({ success: true, tweets: rows });
+    });
+});
+
+// Get a single post by ID (Fixes 404 on reply.html)
+app.get('/api/tweets/:id', (req, res) => {
+    db.get(`SELECT * FROM tweets WHERE id = ?`, [req.params.id], (err, row) => {
+        if (err) return res.status(500).json({ success: false, message: "Database error" });
+        if (!row) return res.status(404).json({ success: false, message: "Post not found" });
+        res.json({ success: true, tweet: row });
+    });
+});
+
+// Create a new post
+app.post('/api/tweets', (req, res) => {
+    const { name, username, avatar, color, verified, time, text, views } = req.body;
+    db.run(`INSERT INTO tweets (name, username, avatar, color, verified, time, text, views, likes, replies, rt) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0)`,
+        [name, username, avatar, color, verified ? 1 : 0, time, text, views || '0'],
+        function(err) {
+            if (err) return res.status(500).json({ success: false });
+            res.json({ success: true, tweetId: this.lastID });
+        }
+    );
+});
+
+// Like a post
+app.post('/api/tweets/:id/like', (req, res) => {
+    const { isLiked } = req.body;
+    const inc = isLiked ? 1 : -1;
+    db.run(`UPDATE tweets SET likes = max(0, likes + ?), hasLiked = ? WHERE id = ?`, 
+        [inc, isLiked ? 1 : 0, req.params.id], 
+        (err) => res.json({ success: !err })
+    );
+});
+
+// Retweet a post
+app.post('/api/tweets/:id/rt', (req, res) => {
+    const { isRT } = req.body;
+    const inc = isRT ? 1 : -1;
+    db.run(`UPDATE tweets SET rt = max(0, rt + ?), hasRT = ? WHERE id = ?`, 
+        [inc, isRT ? 1 : 0, req.params.id], 
+        (err) => res.json({ success: !err })
+    );
+});
+
+// Fetch all replies for a specific post (Fixes empty reply section)
+app.get('/api/tweets/:id/replies', (req, res) => {
+    db.all(`SELECT * FROM replies WHERE tweetId = ? ORDER BY timestamp ASC`, [req.params.id], (err, rows) => {
+        if (err) return res.status(500).json({ success: false });
+        res.json({ success: true, replies: rows });
+    });
+});
+
+// Post a new reply (Fixes unresponsive reply modal)
+app.post('/api/tweets/:id/replies', (req, res) => {
+    const { name, username, avatar, color, verified, time, text } = req.body;
+    const tweetId = req.params.id;
+
+    db.run(`INSERT INTO replies (tweetId, name, username, avatar, color, verified, time, text) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [tweetId, name, username, avatar, color, verified ? 1 : 0, time, text],
+        function(err) {
+            if (err) return res.status(500).json({ success: false, error: err.message });
+            
+            // Increment the reply count on the main post atomically
+            db.run(`UPDATE tweets SET replies = replies + 1 WHERE id = ?`, [tweetId], (updateErr) => {
+                if (updateErr) console.error("Failed to update reply count");
+            });
+            
+            res.json({ success: true, replyId: this.lastID });
+        }
+    );
+});
+
+// Delete a post (Cascades to replies if PRAGMA foreign_keys = ON)
+app.delete('/api/tweets/:id', (req, res) => {
+    db.run(`DELETE FROM tweets WHERE id = ?`, [req.params.id], function(err) {
+        if (err) return res.status(500).json({ success: false });
+        res.json({ success: true });
     });
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 REDEFINE Backend running on http://localhost:${PORT}`);
+    console.log(`🚀 Redefine Server running on http://localhost:${PORT}`);
 });

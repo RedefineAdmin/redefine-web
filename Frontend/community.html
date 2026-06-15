@@ -57,16 +57,14 @@ a{text-decoration:none;color:inherit;}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
 
 /* NOTIFICATION BADGES */
-.notif-dot{position:absolute;top:0px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--red);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;padding:0 4px; display: none;}
-.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px; display: none;}
+.notif-dot{position:absolute;top:0px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--red);border:2px solid var(--card);display:none;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;padding:0 4px;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px; display:none;}
 
 .tb-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:all .18s;position:relative;}
 .tb-btn:hover{background:var(--pg);color:var(--p);border-color:rgba(139,124,248,0.3);}
-
 .tb-profile{display:flex;align-items:center;gap:9px;cursor:pointer;padding:5px 12px;border-radius:30px;border:1px solid var(--border);background:rgba(255,255,255,0.02);transition:all .18s;position:relative;}
 .tb-profile:hover{background:var(--pg);border-color:rgba(139,124,248,0.25);}
 .tb-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--p),#b06aff);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;overflow:hidden;border:2px solid rgba(139,124,248,0.45);}
-.tb-av img{width:100%;height:100%;object-fit:cover;display:none;}
 .tb-uname{font-size:13px;font-weight:600; transition: color 0.3s;}
 
 /* Dropdown */
@@ -110,12 +108,11 @@ a{text-decoration:none;color:inherit;}
 .compose-actions {display: flex;justify-content: space-between;align-items: center;border-top: 1px solid var(--border);padding-top: 15px;}
 .action-icons {display: flex;gap: 15px;color: var(--twitter-blue);cursor: pointer;}
 .action-icons svg {width: 20px;height: 20px;transition: 0.2s;}
-.action-icons svg:hover {background: rgba(29, 155, 240, 0.1);border-radius: 50%;}
 .post-btn {background: var(--twitter-blue);color: white;border: none;padding: 8px 20px;border-radius: 20px;font-weight: 700;font-family: var(--font);cursor: pointer;transition: 0.2s;font-size: 14px;}
 .post-btn:hover {background: #1a8cd8;}
 
 /* TWEETS */
-.tweet {display: flex;gap: 15px;padding: 16px 20px;border-bottom: 1px solid var(--border);transition: background 0.2s;position: relative;}
+.tweet {display: flex;gap: 15px;padding: 16px 20px;border-bottom: 1px solid var(--border);transition: background 0.2s;position: relative; cursor: pointer;}
 .tweet:last-child {border-bottom: none; border-radius: 0 0 var(--r2) var(--r2); }
 .tweet:hover {background: var(--pg);}
 .tweet-av {width: 40px;height: 40px;border-radius: 50%;flex-shrink: 0;display: flex;align-items: center;justify-content: center;font-weight: 700;color: white;font-size: 16px; cursor:pointer;}
@@ -133,7 +130,6 @@ a{text-decoration:none;color:inherit;}
 .tm-item {padding: 10px 15px;display: flex;align-items: center;gap: 10px;cursor: pointer;color: var(--t1);font-size: 13px;font-weight: 600;}
 .tm-item:hover {background: var(--pg);}
 .tm-item.danger {color: var(--red);}
-.tm-item.danger:hover {background: rgba(248, 113, 113, 0.1);}
 .tweet-text {color: var(--t1);font-size: 14.5px;line-height: 1.5;margin-bottom: 12px;word-wrap: break-word;}
 .tweet-actions {display: flex;justify-content: space-between;max-width: 425px;color: var(--t3);margin-top: 10px;}
 .t-action {display: flex;align-items: center;gap: 8px;font-size: 13px;transition: 0.2s;cursor: pointer;user-select: none;}
@@ -145,6 +141,14 @@ a{text-decoration:none;color:inherit;}
 .t-action.like:hover, .t-action.like.active {color: var(--pink);}
 .t-action.like:hover svg {background: rgba(249, 24, 128, 0.1);}
 .t-action.like.active svg {fill: var(--pink);stroke: var(--pink);}
+
+/* ── MODAL OVERLAY FOR REPLIES ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding-top: 10vh; opacity: 0; pointer-events: none; transition: 0.3s; }
+.modal-overlay.show { opacity: 1; pointer-events: auto; }
+.reply-card { background: var(--bg2); border: 1px solid var(--borderf); border-radius: var(--r3); padding: 25px; width: 100%; max-width: 600px; position: relative; box-shadow: var(--shadow-lg); transform: translateY(-20px); transition: 0.3s cubic-bezier(0.25, 1, 0.35, 1); }
+.modal-overlay.show .reply-card { transform: translateY(0); }
+.close-modal { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.05); border: none; color: var(--t1); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.close-modal:hover { background: rgba(255,255,255,0.1); }
 
 /* FAB */
 .fab-container {position: fixed;bottom: 40px;right: 40px;z-index: 100;display: flex;flex-direction: column;align-items: flex-end;gap: 15px;}
@@ -202,7 +206,7 @@ a{text-decoration:none;color:inherit;}
     <a href="home.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Home</a>
     <a href="dashboard.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Study Hub</a>
     <a href="community.html" class="sb-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Community</a>
-    <a href="inbox.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Inbox <span class="nav-badge">3</span></a>
+    <a href="inbox.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Inbox <span class="nav-badge" style="display:none;"></span></a>
     <a href="about.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> About Us</a>
     <div class="sb-section" style="margin-top: 20px;">Account</div> 
     <a href="profile.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</a>
@@ -217,14 +221,14 @@ a{text-decoration:none;color:inherit;}
 
 <header class="topbar">
   <button class="ham" id="ham"><span></span><span></span><span></span></button>
-  <div class="tb-search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search posts, topics, people..."/></div>
+  <div class="tb-search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search across REDEFINE..."/></div>
   <div class="tb-right">
-    <div class="tb-btn" onclick="location.href='inbox.html'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot">3</div></div>
+    <div class="tb-btn" onclick="location.href='inbox.html'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot" style="display:none;"></div></div>
     <div class="tb-profile" id="tb-profile-btn">
       <div class="tb-av" id="tb-av-disp2"><span id="tb-av-letter2">P</span></div>
       <span class="tb-uname" id="tb-uname">User</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       <div class="dropdown" id="profile-dd">
-        <div class="dd-head"><div class="dd-name" id="dd-name">User</div><div class="dd-email" id="dd-email">email@example.com</div></div>
+        <div class="dd-head"><div class="dd-name" id="dd-name">User Name</div><div class="dd-email" id="dd-email">user@example.com</div></div>
         <div class="dd-item" onclick="location.href='profile.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile</div>
         <div class="dd-item" onclick="location.href='subscription.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription</div>
         <div class="dd-sep"></div>
@@ -233,15 +237,6 @@ a{text-decoration:none;color:inherit;}
     </div>
   </div>
 </header>
-
-<div class="fab-container">
-  <div class="fab-menu" id="fab-menu">
-    <button class="fab-item" onclick="document.querySelector('.compose-input').focus();"><span style="font-size: 16px;">📝</span> Post</button>
-    <button class="fab-item" onclick="alert('Media upload coming soon!')"><span style="font-size: 16px;">📷</span> Media</button>
-    <button class="fab-item" onclick="alert('Polls feature coming soon!')"><span style="font-size: 16px;">📊</span> Poll</button>
-  </div>
-  <div class="fab-post" id="fab-trigger"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
-</div>
 
 <main class="main">
   <div class="twitter-layout">
@@ -292,7 +287,7 @@ a{text-decoration:none;color:inherit;}
         </div>
 
         <div class="twitter-widget">
-            <h3>Who to follow</h3>
+            <h3 style="margin-bottom: 15px;">Who to follow</h3>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <div style="display: flex; gap: 10px; align-items: center; cursor:pointer;" onclick="location.href='user-profile.html?u=ChemWizard_Tips'">
                     <div style="width: 36px; height: 36px; border-radius: 50%; background: #059669; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">C</div>
@@ -312,27 +307,54 @@ a{text-decoration:none;color:inherit;}
   </div>
 </main>
 
+<div class="modal-overlay" id="reply-modal" onclick="closeReplyModal()">
+  <div class="reply-card" onclick="event.stopPropagation()">
+    <button class="close-modal" onclick="closeReplyModal()">✕</button>
+    <div style="display: flex; gap: 15px; margin-top: 15px;">
+        <div class="compose-av" id="reply-av-letter" style="background:linear-gradient(135deg, var(--twitter-blue), #b06aff);">P</div>
+        <div style="flex: 1;">
+            <textarea class="compose-input" id="modal-reply-input" placeholder="Post your reply"></textarea>
+            <div class="compose-actions" style="border-top: none; padding-top: 0;">
+                <div class="action-icons"></div>
+                <button class="post-btn" id="modal-submit-reply-btn">Reply</button>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span class="toast-msg" id="toast-msg">Success!</span></div>
 
 <script>
+// Canvas BG
 (function(){var c=document.getElementById('bg-canvas'),ctx=c.getContext('2d'),W,H;function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}window.addEventListener('resize',resize);resize();var PAL=[[139,124,248],[109,92,232],[180,90,240],[80,140,255]];function Orb(){this.init();}Orb.prototype.init=function(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=100+Math.random()*220;this.vx=(Math.random()-.5)*.15;this.vy=(Math.random()-.5)*.15;this.c=PAL[Math.floor(Math.random()*PAL.length)];this.a=.04+Math.random()*.07;};Orb.prototype.update=function(t){this.x+=this.vx;this.y+=this.vy;if(this.x<-this.r||this.x>W+this.r||this.y<-this.r||this.y>H+this.r)this.init();};Orb.prototype.draw=function(){var g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);g.addColorStop(0,'rgba('+this.c+','+this.a+')');g.addColorStop(1,'rgba('+this.c+',0)');ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();};var orbs=[];for(var i=0;i<10;i++){var o=new Orb();o.x=Math.random()*W;o.y=Math.random()*H;orbs.push(o);}function drawGrid(){ctx.save();ctx.strokeStyle='rgba(139,124,248,.035)';ctx.lineWidth=1;for(var x=0;x<W;x+=56){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(var y=0;y<H;y+=56){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}ctx.restore();}var t=0;function loop(){t++;ctx.clearRect(0,0,W,H);ctx.fillStyle='#0a0812';ctx.fillRect(0,0,W,H);drawGrid();orbs.forEach(function(o){o.update(t);o.draw();});requestAnimationFrame(loop);}loop();})();
 
+// UI Scripts
 document.getElementById('ham').addEventListener('click', () => {document.querySelector('.sidebar').style.transform = 'translateX(0)';document.getElementById('sb-overlay').style.display='block';});
 document.getElementById('sb-overlay').addEventListener('click', () => {document.querySelector('.sidebar').style.transform = 'translateX(-100%)';document.getElementById('sb-overlay').style.display='none';});
-
 var ddOpen = false;var dd = document.getElementById('profile-dd');
 document.getElementById('tb-profile-btn').addEventListener('click', (e) => { e.stopPropagation(); ddOpen ? (dd.classList.remove('open'),ddOpen=false) : (dd.classList.add('open'),ddOpen=true); });
 window.closeAllTweetMenus = () => { document.querySelectorAll('.tweet-menu').forEach(m => m.classList.remove('open')); };
 document.addEventListener('click', () => { if(ddOpen){dd.classList.remove('open');ddOpen=false;} closeAllTweetMenus(); });
 
-const tabs = document.querySelectorAll('.feed-tab'); tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); }); });
-const fabTrigger = document.getElementById('fab-trigger'); const fabMenu = document.getElementById('fab-menu');
-fabTrigger.addEventListener('click', () => { fabTrigger.classList.toggle('active'); fabMenu.classList.toggle('open'); });
-
-function showToast(msg, err=false){
+function showToast(msg) {
   var t=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
-  t.style.borderColor=err?'rgba(248,113,113,.35)':'rgba(52,211,153,.35)'; t.querySelector('.toast-icon').style.color=err?'#f87171':'#34d399';
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function timeAgo(dateString) {
+    if (!dateString) return "Just now";
+    const safeDateString = dateString.replace(' ', 'T') + 'Z';
+    const date = new Date(safeDateString); 
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + "m";
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + "h";
+    const days = Math.floor(hours / 24);
+    if (days < 7) return days + "d";
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function updateNotifBadges() {
@@ -348,114 +370,164 @@ function updateNotifBadges() {
 }
 updateNotifBadges();
 
+// ── SETUP & DB ──
+const API_URL = 'http://127.0.0.1:3000/api';
 let currentUser = null;
 let allTweets = [];
-const API_URL = 'http://127.0.0.1:3000/api';
-
-function timeAgo(dateString) {
-    if (!dateString) return "Just now";
-    const date = new Date(dateString + 'Z'); 
-    const seconds = Math.floor((new Date() - date) / 1000);
-    if (seconds < 60) return "Just now";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return minutes + "m";
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return hours + "h";
-    const days = Math.floor(hours / 24);
-    if (days < 7) return days + "d";
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
 
 document.addEventListener("DOMContentLoaded", async () => {
     const userData = localStorage.getItem("redefine_user");
     if (!userData) { window.location.href = "index.html"; return; }
-    
     currentUser = JSON.parse(userData);
     const initial = currentUser.name.charAt(0).toUpperCase();
-    const userPlan = currentUser.plan || "Free";
     
+    const userPlan = (currentUser.plan && currentUser.plan.trim() !== "") ? currentUser.plan : "Free";
+
     document.getElementById("sb-pname").textContent = currentUser.name;
     document.getElementById("sb-av-letter").textContent = initial;
-    document.getElementById("sb-prole").textContent = `${userPlan} Plan`;
+    document.getElementById("sb-prole").innerText = userPlan + " Plan"; 
     document.getElementById("tb-uname").textContent = currentUser.name.split(' ')[0];
     document.getElementById("compose-av-letter").textContent = initial;
-    document.getElementById("dd-name").textContent = currentUser.name;
-    document.getElementById("dd-email").textContent = currentUser.email;
-    document.getElementById("tb-av-letter2").textContent = initial;
+    document.getElementById("reply-av-letter").textContent = initial;
 
-    if (userPlan === 'Elite' || userPlan === 'Pro') {
-        if (userPlan === 'Elite') { document.getElementById("sb-pname").style.color = 'var(--ylw)'; document.getElementById("tb-uname").style.color = 'var(--ylw)'; }
-    }
-    const isPremium = (userPlan === 'Elite' || userPlan === 'Pro');
+    await loadFeed();
+});
 
-    const tweetsContainer = document.getElementById("tweets-container");
-    
-    async function loadFeed() {
-        try {
-            const res = await fetch(`${API_URL}/tweets`);
-            const data = await res.json();
-            if (data.success) { allTweets = data.tweets; renderFeed(); }
-        } catch(e) { console.error(e); }
-    }
+window.toggleLikeMain = async function(id, currentLiked) {
+    const isLiked = !currentLiked;
+    await fetch(`${API_URL}/tweets/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: isLiked }) });
+    await loadFeed();
+}
 
-    function renderFeed() {
-        tweetsContainer.innerHTML = "";
-        allTweets.forEach((tweet) => {
-            const displayTime = tweet.timestamp ? timeAgo(tweet.timestamp) : tweet.time; 
-            const tick = tweet.verified ? `<span class="tweet-verified" style="margin-left:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>` : '';
-            const isMine = tweet.username === currentUser.username;
-            
-            const menuHTML = isMine 
-              ? `<div class="tm-item danger" onclick="deleteTweet(${tweet.id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg> Delete post</div>`
-              : `<div class="tm-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Report post</div>`;
+window.toggleRTMain = async function(id, currentRT) {
+    const isRT = !currentRT;
+    await fetch(`${API_URL}/tweets/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: isRT }) });
+    await loadFeed();
+}
 
-            const html = `
-            <div class="tweet" id="t-${tweet.id}">
-              <div class="tweet-av" style="background:${tweet.color};" onclick="location.href='user-profile.html?u=${tweet.username}'">${tweet.avatar}</div>
-              <div class="tweet-content">
-                  <div class="tweet-header-row">
-                      <div class="tweet-header-info">
-                          <span class="tweet-name" onclick="location.href='user-profile.html?u=${tweet.username}'">${tweet.name}</span>${tick}
-                          <span class="tweet-handle">@${tweet.username}</span>
-                          <span class="tweet-time">· ${displayTime}</span>
-                      </div>
-                      <div class="tweet-more" onclick="toggleTweetMenu(event, ${tweet.id})">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                          <div class="tweet-menu" id="menu-${tweet.id}">${menuHTML}</div>
-                      </div>
+window.loadFeed = async function() {
+    try {
+        const res = await fetch(`${API_URL}/tweets`);
+        const data = await res.json();
+        if (data.success) { 
+            allTweets = data.tweets; 
+            renderFeed(); 
+        }
+    } catch(e) { console.error(e); }
+}
+
+function renderFeed() {
+    const container = document.getElementById("tweets-container");
+    container.innerHTML = "";
+    allTweets.forEach((tweet) => {
+        const displayTime = tweet.timestamp ? timeAgo(tweet.timestamp) : tweet.time; 
+        const tick = tweet.verified ? `<span class="tweet-verified" style="margin-left:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>` : '';
+        const isMine = tweet.username === currentUser.username;
+        
+        const menuHTML = isMine 
+          ? `<div class="tm-item danger" onclick="event.stopPropagation(); deleteTweet(${tweet.id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg> Delete post</div>`
+          : `<div class="tm-item" onclick="event.stopPropagation(); alert('Reported')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Report post</div>`;
+
+        const html = `
+        <div class="tweet" id="t-${tweet.id}" onclick="goToReply(${tweet.id})">
+          <div class="tweet-av" style="background:${tweet.color};" onclick="event.stopPropagation(); location.href='user-profile.html?u=${tweet.username}'">${tweet.avatar}</div>
+          <div class="tweet-content">
+              <div class="tweet-header-row">
+                  <div class="tweet-header-info">
+                      <span class="tweet-name" onclick="event.stopPropagation(); location.href='user-profile.html?u=${tweet.username}'">${tweet.name}</span>${tick}
+                      <span class="tweet-handle">@${tweet.username}</span>
+                      <span class="tweet-time">· ${displayTime}</span>
                   </div>
-                  <div class="tweet-text">${tweet.text}</div>
-                  <div class="tweet-actions">
-                      <div class="t-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> ${tweet.replies}</div>
-                      <div class="t-action rt ${tweet.hasRT ? 'active' : ''}" onclick="toggleRT(${tweet.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg> ${tweet.rt}</div>
-                      <div class="t-action like ${tweet.hasLiked ? 'active' : ''}" onclick="toggleLike(${tweet.id})"><svg viewBox="0 0 24 24" fill="${tweet.hasLiked ? 'var(--pink)' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${tweet.likes}</div>
-                      <div class="t-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ${tweet.views}</div>
+                  <div class="tweet-more" onclick="event.stopPropagation(); toggleTweetMenu(event, ${tweet.id})">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                      <div class="tweet-menu" id="menu-${tweet.id}">${menuHTML}</div>
                   </div>
               </div>
-            </div>`;
-            tweetsContainer.insertAdjacentHTML('beforeend', html);
-        });
-    }
-
-    window.toggleTweetMenu = function(e, id) { e.stopPropagation(); closeAllTweetMenus(); document.getElementById(`menu-${id}`).classList.toggle('open'); };
-    window.deleteTweet = async function(id) { await fetch(`${API_URL}/tweets/${id}`, { method: 'DELETE' }); await loadFeed(); };
-    window.toggleLike = async function(id) { const t = allTweets.find(t => t.id === id); if(t) { t.hasLiked = !t.hasLiked; t.likes += t.hasLiked ? 1 : -1; renderFeed(); await fetch(`${API_URL}/tweets/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: t.hasLiked }) }); } };
-    window.toggleRT = async function(id) { const t = allTweets.find(t => t.id === id); if(t) { t.hasRT = !t.hasRT; t.rt += t.hasRT ? 1 : -1; renderFeed(); await fetch(`${API_URL}/tweets/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: t.hasRT }) }); } };
-
-    document.getElementById("post-btn-submit").addEventListener("click", async () => {
-        const input = document.getElementById("tweet-input");
-        const text = input.value.trim();
-        if (!text) return;
-
-        const newTweet = { name: currentUser.name, username: currentUser.username, avatar: initial, color: "linear-gradient(135deg, var(--twitter-blue), #b06aff)", verified: isPremium, time: "Just now", text: text.replace(/\n/g, '<br>'), views: 0 };
-        document.getElementById("post-btn-submit").textContent = "Posting...";
-        await fetch(`${API_URL}/tweets`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTweet) });
-        input.value = ""; document.getElementById("post-btn-submit").textContent = "Post";
-        document.getElementById("feed-scroll-area").scrollTop = 0;
-        await loadFeed(); 
+              <div class="tweet-text">${tweet.text}</div>
+              <div class="tweet-actions">
+                  <div class="t-action" onclick="event.stopPropagation(); openReplyModal(${tweet.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> ${tweet.replies}</div>
+                  <div class="t-action rt ${tweet.hasRT ? 'active' : ''}" onclick="event.stopPropagation(); toggleRTMain(${tweet.id}, ${tweet.hasRT})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg> ${tweet.rt}</div>
+                  <div class="t-action like ${tweet.hasLiked ? 'active' : ''}" onclick="event.stopPropagation(); toggleLikeMain(${tweet.id}, ${tweet.hasLiked})"><svg viewBox="0 0 24 24" fill="${tweet.hasLiked ? 'var(--pink)' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${tweet.likes}</div>
+                  <div class="t-action" onclick="event.stopPropagation();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ${tweet.views}</div>
+              </div>
+          </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
     });
+}
 
-    loadFeed(); 
+window.toggleTweetMenu = function(e, id) { e.stopPropagation(); closeAllTweetMenus(); document.getElementById(`menu-${id}`).classList.toggle('open'); };
+window.deleteTweet = async function(id) { await fetch(`${API_URL}/tweets/${id}`, { method: 'DELETE' }); await loadFeed(); };
+
+document.getElementById("post-btn-submit").addEventListener("click", async () => {
+    const input = document.getElementById("tweet-input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    const btn = document.getElementById("post-btn-submit");
+    btn.textContent = "Posting...";
+
+    const newTweet = { 
+        name: currentUser.name, 
+        username: currentUser.username, 
+        avatar: currentUser.name.charAt(0).toUpperCase(), 
+        color: "linear-gradient(135deg, var(--twitter-blue), #b06aff)", 
+        verified: (currentUser.plan === 'Elite' || currentUser.plan === 'Pro'), 
+        time: "Just now", 
+        text: text.replace(/\n/g, '<br>'), 
+        views: 0 
+    };
+    
+    await fetch(`${API_URL}/tweets`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTweet) });
+    
+    input.value = ""; 
+    btn.textContent = "Post";
+    document.getElementById("feed-scroll-area").scrollTop = 0;
+    await window.loadFeed(); 
+});
+
+// ── MODAL REPLY LOGIC ──
+let replyingToId = null;
+
+window.goToReply = function(id) {
+    window.location.href = `reply.html?id=${id}`;
+};
+
+window.openReplyModal = function(id) {
+    replyingToId = id;
+    document.getElementById('reply-modal').classList.add('show');
+    setTimeout(() => document.getElementById('modal-reply-input').focus(), 100);
+};
+
+window.closeReplyModal = function() {
+    document.getElementById('reply-modal').classList.remove('show');
+    document.getElementById('modal-reply-input').value = '';
+    replyingToId = null;
+};
+
+document.getElementById("modal-submit-reply-btn").addEventListener("click", async () => {
+    const text = document.getElementById("modal-reply-input").value.trim();
+    if (!text || !replyingToId) return;
+
+    const btn = document.getElementById("modal-submit-reply-btn");
+    btn.textContent = "Replying...";
+
+    const newReply = { 
+        name: currentUser.name, 
+        username: currentUser.username, 
+        avatar: currentUser.name.charAt(0).toUpperCase(), 
+        color: "linear-gradient(135deg, var(--twitter-blue), #b06aff)", 
+        verified: (currentUser.plan === 'Elite' || currentUser.plan === 'Pro'), 
+        time: "Just now", 
+        text: text.replace(/\n/g, '<br>') 
+    };
+
+    await fetch(`${API_URL}/tweets/${replyingToId}/replies`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newReply) });
+
+    closeReplyModal();
+    btn.textContent = "Reply";
+    showToast("Reply posted!");
+    await loadFeed(); 
 });
 </script>
 </body>
