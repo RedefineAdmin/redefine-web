@@ -547,7 +547,7 @@
         btn.textContent = "Creating account...";
         btn.disabled = true;
 
-        const response = await fetch(`${API_URL}/signup`, {
+        const response = await fetch(`${API_URL}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fullName, email, phone, username, password, otp }) 
@@ -559,7 +559,7 @@
           const loginRes = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ loginId: email, password: password }) 
+            body: JSON.stringify({ identifier: email, password: password }) 
           });
           const loginData = await loginRes.json();
           
@@ -607,7 +607,7 @@
         const response = await fetch(`${API_URL}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ loginId, password })
+          body: JSON.stringify({ identifier: loginId, password })
         });
 
         const data = await response.json();
