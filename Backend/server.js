@@ -11,9 +11,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors({ origin: '*' }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../Frontend')));
+app.use(express.static(__dirname)); 
 
-// --- EMAIL TRANSPORTER ---
 // ─── EMAIL TRANSPORTER ───
 // Note: Hardcoding credentials is a security risk. In production, move these to a .env file.
 const transporter = nodemailer.createTransport({
@@ -57,7 +56,7 @@ function initializeSchema() {
             replies INTEGER DEFAULT 0, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
 
-        // 4. Replies Table (NEW: Fixes the missing comments issue)
+        // 4. Replies Table
         db.run(`CREATE TABLE IF NOT EXISTS replies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             tweetId INTEGER NOT NULL,
@@ -68,7 +67,7 @@ function initializeSchema() {
 
         // Safe Migration: Ensure existing 'tweets' table has a 'replies' column
         db.run(`ALTER TABLE tweets ADD COLUMN replies INTEGER DEFAULT 0`, (err) => {
-            // Ignore error if column already exists; standard SQLite limitation workaround
+            // Ignore error if column already exists
         });
     });
 }
@@ -92,6 +91,15 @@ app.post('/api/signup', async (req, res) => {
         db.run(`INSERT OR REPLACE INTO pending_otps (email, otpCode) VALUES (?, ?)`, [email, otp], (err) => {
             if (err) return res.status(500).json({ success: false, message: "Failed to generate OTP" });
             
+            // --- DEVELOPER BYPASS: PRINT OTP TO RENDER LOGS ---
+            console.log(`\n=========================================`);
+            console.log(`🔔 NEW USER OTP CODE: ${otp}`);
+            console.log(`=========================================\n`);
+            
+            // Tell the frontend it was successful immediately!
+            return res.status(200).json({ success: true, message: "OTP bypassed for development" });
+            
+            /* (Nodemailer temporarily disabled due to Render free tier blocks)
             transporter.sendMail({
                 from: 'connect.thecreatorslinkup@gmail.com',
                 to: email,
@@ -101,6 +109,7 @@ app.post('/api/signup', async (req, res) => {
                 if (mailErr) return res.status(500).json({ success: false, message: "Failed to send email" });
                 res.status(200).json({ success: true, message: "OTP sent successfully" });
             });
+            */
         });
     });
 });
@@ -159,7 +168,7 @@ app.get('/api/tweets', (req, res) => {
     });
 });
 
-// Get a single post by ID (Fixes 404 on reply.html)
+// Get a single post by ID
 app.get('/api/tweets/:id', (req, res) => {
     db.get(`SELECT * FROM tweets WHERE id = ?`, [req.params.id], (err, row) => {
         if (err) return res.status(500).json({ success: false, message: "Database error" });
@@ -201,7 +210,7 @@ app.post('/api/tweets/:id/rt', (req, res) => {
     );
 });
 
-// Fetch all replies for a specific post (Fixes empty reply section)
+// Fetch all replies for a specific post
 app.get('/api/tweets/:id/replies', (req, res) => {
     db.all(`SELECT * FROM replies WHERE tweetId = ? ORDER BY timestamp ASC`, [req.params.id], (err, rows) => {
         if (err) return res.status(500).json({ success: false });
@@ -209,7 +218,7 @@ app.get('/api/tweets/:id/replies', (req, res) => {
     });
 });
 
-// Post a new reply (Fixes unresponsive reply modal)
+// Post a new reply
 app.post('/api/tweets/:id/replies', (req, res) => {
     const { name, username, avatar, color, verified, time, text } = req.body;
     const tweetId = req.params.id;
@@ -230,7 +239,7 @@ app.post('/api/tweets/:id/replies', (req, res) => {
     );
 });
 
-// Delete a post (Cascades to replies if PRAGMA foreign_keys = ON)
+// Delete a post
 app.delete('/api/tweets/:id', (req, res) => {
     db.run(`DELETE FROM tweets WHERE id = ?`, [req.params.id], function(err) {
         if (err) return res.status(500).json({ success: false });
@@ -238,6 +247,16 @@ app.delete('/api/tweets/:id', (req, res) => {
     });
 });
 
+// ==========================================
+// ─── ADMIN DASHBOARD ───
+// ==========================================
+app.get('/secret-admin-users', (req, res) => {
+    db.all(`SELECT id, fullName, email, username, phone FROM users`, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+        res.send(`<pre>Total Users: ${rows.length}\n\n${JSON.stringify(rows, null, 4)}</pre>`);
+    });
+});
+
 app.listen(PORT, () => {
-    console.log(`🚀 Redefine Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Redefine Server running on port ${PORT}`);
 });
