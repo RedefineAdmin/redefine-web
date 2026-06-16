@@ -407,7 +407,7 @@ window.toggleRTMain = async function(id, currentRT) {
 
 window.loadFeed = async function() {
     try {
-        const res = await fetch(`${API_URL}/tweets`);
+        const res = await fetch('/api/tweets');
         const data = await res.json();
         if (data.success) { 
             allTweets = data.tweets; 
