@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors({ origin: '*' }));
 app.use(express.json());
-app.use(express.static(__dirname)); 
+app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // ─── EMAIL TRANSPORTER ───
 // Note: Hardcoding credentials is a security risk. In production, move these to a .env file.
