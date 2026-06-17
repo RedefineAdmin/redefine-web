@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REDEFINE | Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { background-color: #0a0812; color: #fff; font-family: 'Sora', sans-serif; padding: 40px; margin: 0; }
+    h1 { color: #8b7cf8; margin-bottom: 5px; }
+    p { color: #6b6585; margin-bottom: 30px; }
+    .stat-box { background: rgba(139,124,248,0.1); border: 1px solid rgba(139,124,248,0.3); padding: 20px; border-radius: 12px; display: inline-block; margin-bottom: 30px; }
+    .stat-box span { font-size: 24px; font-weight: 700; color: #34d399; }
+    table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.03); border-radius: 12px; overflow: hidden; }
+    th, td { padding: 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    th { background-color: rgba(139,124,248,0.2); color: #fff; font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; }
+    td { font-size: 14px; color: #d1d1d1; }
+    .secure { color: #f87171; font-style: italic; font-weight: 600; font-size: 12px; }
+    .username { color: #8b7cf8; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <h1>Redefine Control Center</h1>
+  <p>Live Database Overview</p>
+
+  <div class="stat-box">
+    Total Registered Users: <br>
+    <span id="user-count">Loading...</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Full Name</th>
+        <th>Username</th>
+        <th>Email Address</th>
+        <th>Phone Number</th>
+        <th>Password Status</th>
+      </tr>
+    </thead>
+    <tbody id="user-table-body">
+      <!-- Users will load here -->
+    </tbody>
+  </table>
+
+  <script>
+    async function loadAdminData() {
+      try {
+        // Fetching from the secret JSON endpoint you already built!
+        const res = await fetch('/secret-admin-users');
+        const users = await res.json();
+        
+        document.getElementById('user-count').textContent = users.length;
+        const tbody = document.getElementById('user-table-body');
+        
+        users.forEach(u => {
+          tbody.innerHTML += `
+            <tr>
+              <td>#${u.id}</td>
+              <td>${u.fullName}</td>
+              <td class="username">@${u.username}</td>
+              <td>${u.email}</td>
+              <td>${u.phone}</td>
+              <td class="secure">*** ENCRYPTED ***</td>
+            </tr>
+          `;
+        });
+      } catch (e) {
+        document.getElementById('user-count').textContent = "Error loading database";
+      }
+    }
+    
+    // Load the data immediately when the page opens
+    loadAdminData();
+  </script>
+
+</body>
+</html>
