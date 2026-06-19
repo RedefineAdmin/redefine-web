@@ -55,7 +55,8 @@ a{text-decoration:none;color:inherit;}
 .tb-search input{background:none;border:none;outline:none;flex:1;font-family:var(--font);font-size:13px;color:var(--t1);}
 .tb-search input::placeholder{color:var(--t3);}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
-.notif-dot{position:absolute;top:0px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--red);border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;padding:0 4px; display: none;}
+.notif-dot{position:absolute;top:0px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:var(--red);border:2px solid var(--card);display:none;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;padding:0 4px;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px; display:none;}
 .tb-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);transition:all .18s;position:relative;}
 .tb-btn:hover{background:var(--pg);color:var(--p);border-color:rgba(139,124,248,0.3);}
 .tb-profile{display:flex;align-items:center;gap:9px;cursor:pointer;padding:5px 12px;border-radius:30px;border:1px solid var(--border);background:rgba(255,255,255,0.02);transition:all .18s;position:relative;}
@@ -81,7 +82,7 @@ a{text-decoration:none;color:inherit;}
 .twitter-layout {display: flex;justify-content: center;align-items: flex-start;gap: 30px;max-width: 1100px;margin: 0 auto;height: calc(100vh - var(--sh) - 40px);}
 .feed-column {width: 100%;max-width: 650px;border: 1px solid var(--border);border-radius: var(--r2);background: var(--card);height: 100%;display: flex;flex-direction: column;overflow: hidden;}
 
-/* STICKY HEADER (BACK BUTTON) */
+/* STICKY HEADER */
 .sticky-feed-header {background: rgba(14, 11, 26, 0.98);z-index: 50;flex-shrink: 0; display:flex; align-items:center; padding:15px 20px; gap:15px; cursor:pointer; border-bottom: 1px solid var(--border); transition: 0.2s;}
 .sticky-feed-header:hover {background: var(--pg);}
 .sticky-feed-header h2 {font-size: 1.25rem; font-weight: 700; margin: 0;}
@@ -202,7 +203,7 @@ a{text-decoration:none;color:inherit;}
       <div class="tb-av" id="tb-av-disp2"><span id="tb-av-letter2">P</span></div>
       <span class="tb-uname" id="tb-uname">User</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       <div class="dropdown" id="profile-dd">
-        <div class="dd-head"><div class="dd-name" id="dd-name">User</div><div class="dd-email" id="dd-email">user@example.com</div></div>
+        <div class="dd-head"><div class="dd-name" id="dd-name">User Name</div><div class="dd-email" id="dd-email">user@example.com</div></div>
         <div class="dd-item" onclick="location.href='profile.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile</div>
         <div class="dd-item" onclick="location.href='subscription.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription</div>
         <div class="dd-sep"></div>
@@ -286,6 +287,7 @@ document.getElementById('ham').addEventListener('click', () => {document.querySe
 document.getElementById('sb-overlay').addEventListener('click', () => {document.querySelector('.sidebar').style.transform = 'translateX(-100%)';document.getElementById('sb-overlay').style.display='none';});
 var ddOpen = false;var dd = document.getElementById('profile-dd');
 document.getElementById('tb-profile-btn').addEventListener('click', (e) => { e.stopPropagation(); ddOpen ? (dd.classList.remove('open'),ddOpen=false) : (dd.classList.add('open'),ddOpen=true); });
+
 window.closeAllTweetMenus = () => { document.querySelectorAll('.tweet-menu').forEach(m => m.classList.remove('open')); };
 document.addEventListener('click', () => { if(ddOpen){dd.classList.remove('open');ddOpen=false;} closeAllTweetMenus(); });
 
@@ -294,7 +296,7 @@ function showToast(msg) {
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ── INBOX BADGE (ZERO BUG FIXED) ──
+// ── FIXED INBOX BADGE (ZERO BUG REMOVED) ──
 function updateNotifBadges() {
     const count = parseInt(localStorage.getItem('redefine_notif_count') || "0");
     document.querySelectorAll('.notif-dot, .nav-badge').forEach(el => {
@@ -323,6 +325,18 @@ function timeAgo(dateString) {
     if (days < 7) return days + "d";
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+// ── LOCAL STORAGE MEMORY FOR LIKES & REPOSTS ──
+function getLocal(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
+function toggleLocal(key, id) {
+    let arr = getLocal(key);
+    let exists = arr.includes(id);
+    if(exists) arr = arr.filter(x => x !== id);
+    else arr.push(id);
+    localStorage.setItem(key, JSON.stringify(arr));
+    return !exists; 
+}
+function hasLocal(key, id) { return getLocal(key).includes(id); }
 
 // ── SETUP & DB ──
 const urlParams = new URLSearchParams(window.location.search);
@@ -364,15 +378,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // ── MAIN POST INTERACTIONS ──
-window.toggleLikeMain = async function(id, currentLiked) {
-    const isLiked = !currentLiked;
-    await fetch(`${API_URL}/tweets/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: isLiked }) });
+window.toggleLikeMain = async function(id) {
+    const isLiked = toggleLocal('rd_liked_posts', `tweet_${id}`);
+    try { await fetch(`${API_URL}/tweets/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: isLiked }) }); } catch(e){}
     await window.loadMainTweet();
 }
 
-window.toggleRTMain = async function(id, currentRT) {
-    const isRT = !currentRT;
-    await fetch(`${API_URL}/tweets/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: isRT }) });
+window.toggleRTMain = async function(id) {
+    const isRT = toggleLocal('rd_rt_posts', `tweet_${id}`);
+    try { await fetch(`${API_URL}/tweets/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: isRT }) }); } catch(e){}
     await window.loadMainTweet();
 }
 
@@ -383,6 +397,11 @@ window.loadMainTweet = async function() {
         
         if(data.success && data.tweet) {
             const t = data.tweet;
+            
+            // Read frontend memory to fix infinite bug
+            t.hasLiked = hasLocal('rd_liked_posts', `tweet_${t.id}`);
+            t.hasRT = hasLocal('rd_rt_posts', `tweet_${t.id}`);
+
             const fullDate = t.timestamp ? new Date(t.timestamp + 'Z').toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric', year: 'numeric' }) : "Just now";
             const tick = t.verified ? `<span class="tweet-verified" style="margin-left:4px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>` : '';
             
@@ -409,8 +428,8 @@ window.loadMainTweet = async function() {
                     </div>
                     <div class="tweet-actions main-actions">
                         <div class="t-action" onclick="document.getElementById('reply-input').focus();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div>
-                        <div class="t-action rt ${t.hasRT ? 'active' : ''}" onclick="toggleRTMain(${t.id}, ${t.hasRT})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></div>
-                        <div class="t-action like ${t.hasLiked ? 'active' : ''}" onclick="toggleLikeMain(${t.id}, ${t.hasLiked})"><svg viewBox="0 0 24 24" fill="${t.hasLiked ? 'var(--pink)' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
+                        <div class="t-action rt ${t.hasRT ? 'active' : ''}" onclick="toggleRTMain(${t.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></div>
+                        <div class="t-action like ${t.hasLiked ? 'active' : ''}" onclick="toggleLikeMain(${t.id})"><svg viewBox="0 0 24 24" fill="${t.hasLiked ? 'var(--pink)' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
                         <div class="t-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
                     </div>
                 </div>
@@ -419,16 +438,16 @@ window.loadMainTweet = async function() {
     } catch(e) {}
 }
 
-// ── FIXED: REPLY INTERACTIONS WIRED TO DATABASE ──
-window.toggleReplyLike = async function(id, currentLiked) {
-    const isLiked = !currentLiked;
-    await fetch(`${API_URL}/replies/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: isLiked }) });
+// ── REPLY INTERACTIONS WIRED TO DATABASE ──
+window.toggleReplyLike = async function(id) {
+    const isLiked = toggleLocal('rd_liked_replies', `reply_${id}`);
+    try { await fetch(`${API_URL}/replies/${id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isLiked: isLiked }) }); } catch(e){}
     await window.loadReplies();
 }
 
-window.toggleReplyRT = async function(id, currentRT) {
-    const isRT = !currentRT;
-    await fetch(`${API_URL}/replies/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: isRT }) });
+window.toggleReplyRT = async function(id) {
+    const isRT = toggleLocal('rd_rt_replies', `reply_${id}`);
+    try { await fetch(`${API_URL}/replies/${id}/rt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isRT: isRT }) }); } catch(e){}
     await window.loadReplies();
 }
 
@@ -442,6 +461,11 @@ window.loadReplies = async function() {
         
         if (data.success && data.replies.length > 0) {
             data.replies.forEach(r => {
+                
+                // Read frontend memory to fix infinite bug
+                r.hasLiked = hasLocal('rd_liked_replies', `reply_${r.id}`);
+                r.hasRT = hasLocal('rd_rt_replies', `reply_${r.id}`);
+
                 const displayTime = r.timestamp ? timeAgo(r.timestamp) : r.time;
                 const tick = r.verified ? `<span class="tweet-verified" style="margin-left:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>` : '';
                 
@@ -462,8 +486,8 @@ window.loadReplies = async function() {
                       
                       <div class="tweet-actions" style="max-width:425px; display:flex; justify-content:space-between; margin-top:10px;">
                           <div class="t-action" onclick="document.getElementById('reply-input').value = '@${r.username} '; document.getElementById('reply-input').focus();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div>
-                          <div class="t-action rt ${r.hasRT ? 'active' : ''}" onclick="toggleReplyRT(${r.id}, ${r.hasRT})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg> ${r.rt || 0}</div>
-                          <div class="t-action like ${r.hasLiked ? 'active' : ''}" onclick="toggleReplyLike(${r.id}, ${r.hasLiked})"><svg viewBox="0 0 24 24" fill="${r.hasLiked ? 'var(--pink)' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${r.likes || 0}</div>
+                          <div class="t-action rt ${r.hasRT ? 'active' : ''}" onclick="toggleReplyRT(${r.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg> ${r.rt || 0}</div>
+                          <div class="t-action like ${r.hasLiked ? 'active' : ''}" onclick="toggleReplyLike(${r.id})"><svg viewBox="0 0 24 24" fill="${r.hasLiked ? 'var(--pink)' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> ${r.likes || 0}</div>
                           <div class="t-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> ${r.views || 0}</div>
                       </div>
                   </div>
@@ -492,7 +516,6 @@ document.getElementById("post-reply-btn").addEventListener("click", async () => 
 
     document.getElementById("reply-input").value = '';
     btn.textContent = "Reply";
-    showToast("Reply posted!");
     
     await window.loadMainTweet();
     await window.loadReplies(); 
