@@ -197,10 +197,22 @@ app.post('/api/tweets/:id/rt', (req, res) => {
     );
 });
 
-app.get('/api/tweets/:id/replies', (req, res) => {
-    db.all(`SELECT * FROM replies WHERE tweetId = ? ORDER BY timestamp ASC`, [req.params.id], (err, rows) => {
-        if (err) return res.status(500).json({ success: false });
-        res.json({ success: true, replies: rows });
+app.get('/api/tweets/:id', (req, res) => {
+    const id = req.params.id;
+    
+    // 1. Add a view to the database first!
+    db.run(`UPDATE tweets SET views = views + 1 WHERE id = ?`, [id], (updateErr) => {
+        if (updateErr) console.error("Error updating views:", updateErr);
+        
+        // 2. Then fetch the updated tweet to show on the screen
+        db.get(`SELECT * FROM tweets WHERE id = ?`, [id], (err, row) => {
+            if (err || !row) return res.status(404).json({ success: false, message: "Not found" });
+            
+            // Parse the JSON data so the frontend can read it
+            row.hasLiked = false; 
+            row.hasRT = false;
+            res.json({ success: true, tweet: row });
+        });
     });
 });
 
