@@ -129,13 +129,25 @@ a{text-decoration:none;color:inherit;}
 .tweet {display: flex; gap: 15px; padding: 20px 25px; border-bottom: 1px solid var(--border); transition: background 0.2s; cursor: pointer; position: relative;}
 .tweet:last-child {border-bottom: none;}
 .tweet:hover {background: var(--pg);}
-.tweet-av {width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 18px;}
+.tweet-av {width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 18px; overflow: hidden;}
 .tweet-content {flex: 1; min-width: 0;}
 .tweet-header-row {display: flex; justify-content: space-between; align-items: flex-start;}
 .tweet-header-info {display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;}
-.tweet-name {font-weight: 700; color: var(--t1); font-size: 15px;}
+.tweet-name {font-weight: 700; color: var(--t1); font-size: 15px; cursor:pointer;}
+.tweet-name:hover {text-decoration: underline;}
 .tweet-verified {color: var(--twitter-blue); display: flex; align-items: center; margin-top: 2px;}
 .tweet-handle, .tweet-time {color: var(--t3); font-size: 14px;}
+.tweet-text {color: var(--t1); font-size: 14.5px; line-height: 1.5; margin-bottom: 12px; word-wrap: break-word;}
+.tweet-actions {display: flex; justify-content: space-between; max-width: 425px; color: var(--t3); margin-top: 10px;}
+.t-action {display: flex; align-items: center; gap: 8px; font-size: 13px; transition: 0.2s; cursor: pointer; user-select: none;}
+.t-action svg {width: 18px; height: 18px; transition: 0.2s; border-radius: 50%; padding: 2px; box-sizing: content-box;}
+.t-action:hover {color: var(--twitter-blue);}
+.t-action:hover svg {background: rgba(29, 155, 240, 0.1);}
+.t-action.rt:hover, .t-action.rt.active {color: var(--grn);}
+.t-action.rt:hover svg {background: rgba(0, 186, 124, 0.1);}
+.t-action.like:hover, .t-action.like.active {color: var(--pink);}
+.t-action.like:hover svg {background: rgba(249, 24, 128, 0.1);}
+.t-action.like.active svg {fill: var(--pink); stroke: var(--pink);}
 
 .tweet-more {color: var(--t3); cursor: pointer; padding: 4px; border-radius: 50%; transition: 0.2s; position: relative; display: flex; align-items: center; justify-content: center;}
 .tweet-more:hover {color: var(--twitter-blue); background: rgba(29, 155, 240, 0.1);}
@@ -145,18 +157,6 @@ a{text-decoration:none;color:inherit;}
 .tm-item:hover {background: var(--pg);}
 .tm-item.danger {color: var(--red);}
 .tm-item.danger:hover {background: rgba(248, 113, 113, 0.1);}
-
-.tweet-text {color: var(--t1); font-size: 15px; line-height: 1.5; margin-bottom: 12px; word-wrap: break-word;}
-.tweet-actions {display: flex; justify-content: space-between; max-width: 425px; color: var(--t3); margin-top: 10px;}
-.t-action {display: flex; align-items: center; gap: 8px; font-size: 13px; transition: 0.2s; cursor: pointer; user-select: none;}
-.t-action svg {width: 18px; height: 18px; transition: 0.2s; border-radius: 50%; padding: 2px; box-sizing: content-box;}
-.t-action:hover {color: var(--p);}
-.t-action:hover svg {background: rgba(139,124,248, 0.1);}
-.t-action.rt:hover, .t-action.rt.active {color: var(--grn);}
-.t-action.rt:hover svg {background: rgba(0, 186, 124, 0.1);}
-.t-action.like:hover, .t-action.like.active {color: var(--pink);}
-.t-action.like:hover svg {background: rgba(249, 24, 128, 0.1);}
-.t-action.like.active svg {fill: var(--pink); stroke: var(--pink);}
 
 /* Forms */
 .settings-box {background: var(--card); border: 1px solid var(--border); border-radius: var(--r3); padding: 35px; box-shadow: var(--shadow-sm); margin-bottom: 30px;}
@@ -211,7 +211,7 @@ a{text-decoration:none;color:inherit;}
     <a href="home.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> Home</a>
     <a href="dashboard.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg> Study Hub</a>
     <a href="community.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> Community</a>
-    <a href="inbox.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Inbox <span class="nav-badge">0</span></a>
+    <a href="inbox.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Inbox <span class="nav-badge" style="display:none;"></span></a>
     <a href="about.html" class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> About Us</a>
     <div class="sb-section" style="margin-top: 20px;">Account</div> 
     <a href="profile.html" class="sb-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile</a>
@@ -228,12 +228,12 @@ a{text-decoration:none;color:inherit;}
   <button class="ham" id="ham"><span></span><span></span><span></span></button>
   <div class="tb-search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search across REDEFINE..."/></div>
   <div class="tb-right">
-    <div class="tb-btn" onclick="location.href='inbox.html'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot">0</div></div>
+    <div class="tb-btn" onclick="location.href='inbox.html'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot" style="display:none;"></div></div>
     <div class="tb-profile" id="tb-profile-btn">
       <div class="tb-av" id="tb-av-disp2"><span id="tb-av-letter2">P</span></div>
       <span class="tb-uname" id="tb-uname">User</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       <div class="dropdown" id="profile-dd">
-        <div class="dd-head"><div class="dd-name" id="dd-name">User Name</div><div class="dd-email" id="dd-email">user@example.com</div></div>
+        <div class="dd-head"><div class="dd-name" id="dd-name">User</div><div class="dd-email" id="dd-email">user@example.com</div></div>
         <div class="dd-item" onclick="location.href='profile.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile</div>
         <div class="dd-item" onclick="location.href='subscription.html'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Subscription</div>
         <div class="dd-sep"></div>
@@ -358,18 +358,6 @@ document.getElementById('tb-profile-btn').addEventListener('click', (e) => { e.s
 window.closeAllTweetMenus = () => { document.querySelectorAll('.tweet-menu').forEach(m => m.classList.remove('open')); };
 document.addEventListener('click', () => { if(ddOpen){dd.classList.remove('open');ddOpen=false;} closeAllTweetMenus(); });
 
-document.getElementById('av-file').addEventListener('change', function(){
-  var file=this.files[0]; if(!file) return;
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var src=e.target.result;
-    document.getElementById('av-img').src = src; document.getElementById('av-img').style.display = 'block'; document.getElementById('av-letter').style.display = 'none';
-    if(document.getElementById('tb-av-img2')) { document.getElementById('tb-av-img2').src = src; document.getElementById('tb-av-img2').style.display = 'block'; }
-    if(document.getElementById('tb-av-letter2')) document.getElementById('tb-av-letter2').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-});
-
 var pTabs = document.querySelectorAll('.profile-tab');
 var pPanels = document.querySelectorAll('.profile-panel');
 pTabs.forEach(function (tab) {
@@ -386,23 +374,34 @@ function showToast(msg, err=false){
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ── NOTIFICATION SYNC ──
-let notifCount = localStorage.getItem('redefine_notif_count');
-if (notifCount === null) { notifCount = "3"; localStorage.setItem('redefine_notif_count', notifCount); }
+// ── FIXED INBOX BADGE (ZERO BUG) ──
 function updateNotifBadges() {
     const count = parseInt(localStorage.getItem('redefine_notif_count') || "0");
-    document.querySelectorAll('.notif-dot').forEach(el => {
+    document.querySelectorAll('.notif-dot, .nav-badge').forEach(el => {
         if(count > 0) { el.style.display = 'flex'; el.textContent = count > 9 ? '9+' : count; }
-        else { el.style.display = 'none'; }
-    });
-    document.querySelectorAll('.nav-badge').forEach(el => {
-        if(count > 0) { el.style.display = 'inline-block'; el.textContent = count > 9 ? '9+' : count; }
-        else { el.style.display = 'none'; }
+        else { el.style.display = 'none'; el.textContent = ''; }
     });
 }
 updateNotifBadges();
 
-// ── TIME MATH LOGIC ──
+// ── NEW: BLUE @MENTIONS PARSER ──
+function parseMentions(text) {
+    if (!text) return "";
+    return text.replace(/@([a-z0-9_]+)/gi, '<span style="color: var(--twitter-blue); cursor: pointer; font-weight: 500;" onclick="event.stopPropagation(); location.href=\'user-profile.html?u=$1\'">@$1</span>');
+}
+
+// ── REAL-TIME USERNAME VALIDATION ──
+const pfUname = document.getElementById('pf-username');
+if(pfUname) {
+    pfUname.addEventListener('input', function(e) {
+        const filtered = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+        if (e.target.value !== filtered) {
+            showToast("No capitals or spaces allowed.", true);
+            e.target.value = filtered;
+        }
+    });
+}
+
 function timeAgo(dateString) {
     if (!dateString) return "Just now";
     const date = new Date(dateString + 'Z'); 
@@ -439,12 +438,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("display-fname").textContent = currentUser.name;
     document.getElementById("display-handle").textContent = "@" + currentUser.username;
-    document.getElementById("av-letter").textContent = initial;
+    
+    document.getElementById("pf-fname").value = firstName;
+    if(lastName) document.getElementById("pf-lname").value = lastName;
+    document.getElementById("pf-email").value = currentUser.email;
+    document.getElementById("pf-username").value = currentUser.username;
+
+    // Load Database Avatar instantly
+    if (currentUser.avatar) {
+        const imgTag = `<img src="${currentUser.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">`;
+        document.getElementById('av-img').src = currentUser.avatar;
+        document.getElementById('av-img').style.display = 'block';
+        document.getElementById('av-letter').style.display = 'none';
+        
+        const sb = document.getElementById("sb-av-disp"); if(sb) sb.innerHTML = imgTag;
+        const tb = document.getElementById("tb-av-disp2"); if(tb) tb.innerHTML = imgTag;
+    } else {
+        document.getElementById("av-letter").textContent = initial;
+        document.getElementById("sb-av-letter").textContent = initial;
+        document.getElementById("tb-av-letter2").textContent = initial;
+    }
+
     document.getElementById("sb-pname").textContent = currentUser.name;
-    document.getElementById("sb-av-letter").textContent = initial;
     document.getElementById("sb-prole").textContent = `${userPlan} Plan`;
     document.getElementById("tb-uname").textContent = firstName;
-    document.getElementById("tb-av-letter2").textContent = initial;
     document.getElementById("dd-name").textContent = currentUser.name;
     document.getElementById("dd-email").textContent = currentUser.email;
 
@@ -462,11 +479,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("display-fname").style.color = 'var(--ylw)';
         }
     }
-
-    document.getElementById("pf-fname").value = firstName;
-    if(lastName) document.getElementById("pf-lname").value = lastName;
-    document.getElementById("pf-email").value = currentUser.email;
-    document.getElementById("pf-username").value = currentUser.username;
 
     const container = document.getElementById('profile-tweets-container');
 
@@ -489,9 +501,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const tick = tweet.verified ? `<span class="tweet-verified" style="margin-left:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.25 12c0-5.66-4.59-10.25-10.25-10.25S1.75 6.34 1.75 12c0 5.66 4.59 10.25 10.25 10.25S22.25 17.66 22.25 12zM10.7 16.5l-3.2-3.2 1.06-1.06 2.14 2.14 4.14-4.14 1.06 1.06-5.2 5.2z"></path></svg></span>` : '';
                 const menuHTML = `<div class="tm-item danger" onclick="deleteTweet(${tweet.id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg> Delete post</div>`;
 
+                const isImg = tweet.avatar && tweet.avatar.length > 10;
+                const avatarContent = isImg ? `<img src="${tweet.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : tweet.avatar;
+                const formattedText = parseMentions(tweet.text);
+
                 const html = `
                 <div class="tweet" id="t-${tweet.id}" onclick="location.href='reply.html?id=${tweet.id}'">
-                  <div class="tweet-av" style="background:${tweet.color};">${tweet.avatar}</div>
+                  <div class="tweet-av" style="background:${tweet.color};">${avatarContent}</div>
                   <div class="tweet-content">
                       <div class="tweet-header-row">
                           <div class="tweet-header-info">
@@ -504,7 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
                               <div class="tweet-menu" id="menu-${tweet.id}">${menuHTML}</div>
                           </div>
                       </div>
-                      <div class="tweet-text">${tweet.text}</div>
+                      <div class="tweet-text">${formattedText}</div>
                       <div class="tweet-actions" onclick="event.stopPropagation()">
                           <div class="t-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> ${tweet.replies}</div>
                           <div class="t-action rt ${tweet.hasRT ? 'active' : ''}" onclick="toggleRT(${tweet.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg> ${tweet.rt}</div>
@@ -544,26 +560,63 @@ document.addEventListener("DOMContentLoaded", () => {
     loadFeed();
 });
 
-window.saveProfile = function() {
-  var fname = document.getElementById('pf-fname'); var lname = document.getElementById('pf-lname');
-  var uname = document.getElementById('pf-username'); var bio = document.getElementById('pf-bio');
-  if (fname && !fname.value.trim()){ showToast('First name is required!', true); return; }
+// ── FIXED: AVATAR PERSISTENCE TO DATABASE ──
+document.getElementById('av-file').addEventListener('change', async function() {
+  var file = this.files[0]; if(!file) return;
+  var reader = new FileReader();
   
-  if (fname) {
-    var firstName = fname.value.trim(); var lastName = lname.value.trim(); var fullName = firstName + (lastName ? ' ' + lastName : '');
-    var handle = uname.value.trim() ? uname.value.trim() : firstName.toLowerCase();
+  reader.onload = async function(e) {
+    var src = e.target.result; 
     
-    document.getElementById('tb-uname').textContent = firstName;
-    document.getElementById('dd-name').textContent = fullName;
-    document.getElementById('display-fname').textContent = fullName;
-    document.getElementById('display-handle').textContent = '@' + handle;
+    // Update Local UI instantly
+    document.getElementById('av-img').src = src; 
+    document.getElementById('av-img').style.display = 'block'; 
+    document.getElementById('av-letter').style.display = 'none';
+    
+    const imgTag = `<img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">`;
+    if(document.getElementById('sb-av-disp')) document.getElementById('sb-av-disp').innerHTML = imgTag;
+    if(document.getElementById('tb-av-disp2')) document.getElementById('tb-av-disp2').innerHTML = imgTag;
+    
+    // Update LocalStorage
+    currentUser.avatar = src;
+    localStorage.setItem("redefine_user", JSON.stringify(currentUser));
+    
+    // Push permanently to Database
+    try {
+        await fetch('/api/user/avatar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser.username, avatar: src })
+        });
+        showToast('Profile picture saved permanently!');
+    } catch(err) {
+        showToast('Failed to save to database.', true);
+    }
+  };
+  reader.readAsDataURL(file);
+});
 
-    const userData = JSON.parse(localStorage.getItem("redefine_user"));
-    userData.name = fullName; userData.username = handle; localStorage.setItem("redefine_user", JSON.stringify(userData));
-    
-    currentUser.name = fullName; currentUser.username = handle;
-    if(typeof renderFeed === 'function') renderFeed(); 
-  }
+window.saveProfile = function() {
+  var fname = document.getElementById('pf-fname').value.trim();
+  var lname = document.getElementById('pf-lname').value.trim();
+  var uname = document.getElementById('pf-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+  
+  if (!fname) { showToast('First name is required!', true); return; }
+  if (!uname) { showToast('Username is required!', true); return; }
+  
+  var fullName = fname + (lname ? ' ' + lname : '');
+  
+  document.getElementById('tb-uname').textContent = fname;
+  document.getElementById('dd-name').textContent = fullName;
+  document.getElementById('display-fname').textContent = fullName;
+  document.getElementById('display-handle').textContent = '@' + uname;
+
+  currentUser.name = fullName; 
+  currentUser.username = uname; 
+  localStorage.setItem("redefine_user", JSON.stringify(currentUser));
+  
+  if(typeof renderFeed === 'function') renderFeed(); 
+  
   showToast('Settings saved successfully!');
 };
 </script>
