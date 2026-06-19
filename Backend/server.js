@@ -8,7 +8,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware - Increased limit to 10mb for Base64 Profile Pictures!
+// Middleware
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '10mb' })); 
 
@@ -65,7 +65,7 @@ function initializeSchema() {
             FOREIGN KEY (tweetId) REFERENCES tweets(id) ON DELETE CASCADE
         )`);
 
-        // Safe Migrations: Add new columns securely without deleting existing data
+        // Safe Migrations 
         db.run(`ALTER TABLE users ADD COLUMN avatar TEXT`, () => {});
         db.run(`ALTER TABLE replies ADD COLUMN views INTEGER DEFAULT 0`, () => {});
         db.run(`ALTER TABLE replies ADD COLUMN likes INTEGER DEFAULT 0`, () => {});
@@ -81,10 +81,11 @@ function initializeSchema() {
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+// 1. Request OTP
 app.post('/api/signup', async (req, res) => {
     const { email, username } = req.body;
     
-    // Strict Backend Username Validation
+    // Strict Backend Validation
     if (!/^[a-z0-9_]+$/.test(username)) {
         return res.status(400).json({ success: false, message: "Username can only contain lowercase letters, numbers, and underscores." });
     }
@@ -96,23 +97,30 @@ app.post('/api/signup', async (req, res) => {
         const otp = generateOTP();
         db.run(`INSERT OR REPLACE INTO pending_otps (email, otpCode) VALUES (?, ?)`, [email, otp], (err) => {
             if (err) return res.status(500).json({ success: false, message: "Failed to generate OTP" });
+            
+            // DEVELOPER BYPASS
             console.log(`\n=========================================`);
             console.log(`🔔 NEW USER OTP CODE: ${otp}`);
             console.log(`=========================================\n`);
+            
             return res.status(200).json({ success: true, message: "OTP bypassed for development" });
         });
     });
 });
 
+// 2. Step One: Check OTP
 app.post('/api/check-otp', (req, res) => {
     const { email, otp } = req.body;
+
     db.get(`SELECT * FROM pending_otps WHERE email = ?`, [email], (err, row) => {
         if (err || !row) return res.status(400).json({ success: false, message: "OTP Session expired" });
         if (row.otpCode !== otp) return res.status(400).json({ success: false, message: "Invalid OTP" });
+
         res.status(200).json({ success: true, message: "OTP Verified" });
     });
 });
 
+// 3. Step Two: Final Registration
 const finalizeRegistration = async (req, res) => {
     const { fullName, email, phone, username, password } = req.body;
 
@@ -125,16 +133,23 @@ const finalizeRegistration = async (req, res) => {
         db.run(`INSERT INTO users (fullName, email, phone, username, password) VALUES (?, ?, ?, ?, ?)`,
             [fullName, email, phone, username, hashedPassword], function(err) {
                 if (err) return res.status(500).json({ success: false, message: "Registration failed" });
+                
                 db.run(`DELETE FROM pending_otps WHERE email = ?`, [email]); 
-                res.status(200).json({ success: true, user: { id: this.lastID, name: fullName, username, email, phone, avatar: null } });
+                res.status(200).json({ 
+                    success: true, 
+                    user: { id: this.lastID, name: fullName, username, email, phone, avatar: null } 
+                });
             }
         );
-    } catch (error) { res.status(500).json({ success: false, message: "Server error" }); }
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server error" });
+    }
 };
 
 app.post('/api/register', finalizeRegistration);
 app.post('/api/verify-otp', finalizeRegistration);
 
+// 4. Login
 app.post('/api/login', (req, res) => {
     const { identifier, password } = req.body;
     db.get(`SELECT * FROM users WHERE email = ? OR username = ?`, [identifier, identifier], async (err, user) => {
@@ -144,11 +159,14 @@ app.post('/api/login', (req, res) => {
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.status(400).json({ success: false, message: "Incorrect password" });
 
-        res.status(200).json({ success: true, user: { id: user.id, name: user.fullName, username: user.username, email: user.email, phone: user.phone, avatar: user.avatar } });
+        res.status(200).json({ 
+            success: true, 
+            user: { id: user.id, name: user.fullName, username: user.username, email: user.email, phone: user.phone, avatar: user.avatar } 
+        });
     });
 });
 
-// Save Base64 Avatar to Database
+// 5. Save Avatar
 app.post('/api/user/avatar', (req, res) => {
     const { username, avatar } = req.body;
     db.run(`UPDATE users SET avatar = ? WHERE username = ?`, [avatar, username], function(err) {
@@ -170,7 +188,8 @@ app.get('/api/tweets', (req, res) => {
 
 app.post('/api/tweets', (req, res) => {
     const { name, username, avatar, color, verified, time, text, views } = req.body;
-    db.run(`INSERT INTO tweets (name, username, avatar, color, verified, time, text, views, likes, replies, rt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0)`,
+    db.run(`INSERT INTO tweets (name, username, avatar, color, verified, time, text, views, likes, replies, rt) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0)`,
         [name, username, avatar, color, verified ? 1 : 0, time, text, views || '0'],
         function(err) {
             if (err) return res.status(500).json({ success: false });
@@ -240,6 +259,28 @@ app.post('/api/tweets/:id/replies', (req, res) => {
     });
 });
 
+// ── NEW: REPLY LIKE AND REPOST ROUTES ──
+app.post('/api/replies/:id/like', (req, res) => {
+    const { isLiked } = req.body;
+    const inc = isLiked ? 1 : -1;
+    db.run(`UPDATE replies SET likes = max(0, likes + ?), hasLiked = ? WHERE id = ?`, 
+        [inc, isLiked ? 1 : 0, req.params.id], 
+        (err) => res.json({ success: !err })
+    );
+});
+
+app.post('/api/replies/:id/rt', (req, res) => {
+    const { isRT } = req.body;
+    const inc = isRT ? 1 : -1;
+    db.run(`UPDATE replies SET rt = max(0, rt + ?), hasRT = ? WHERE id = ?`, 
+        [inc, isRT ? 1 : 0, req.params.id], 
+        (err) => res.json({ success: !err })
+    );
+});
+
+// ==========================================
+// ─── ADMIN DASHBOARD ───
+// ==========================================
 app.get('/secret-admin-users', (req, res) => {
     db.all(`SELECT id, fullName, email, username, phone FROM users`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: "Database error" });
