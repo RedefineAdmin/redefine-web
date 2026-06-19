@@ -159,14 +159,6 @@ app.get('/api/tweets', (req, res) => {
     });
 });
 
-app.get('/api/tweets/:id', (req, res) => {
-    db.get(`SELECT * FROM tweets WHERE id = ?`, [req.params.id], (err, row) => {
-        if (err) return res.status(500).json({ success: false, message: "Database error" });
-        if (!row) return res.status(404).json({ success: false, message: "Post not found" });
-        res.json({ success: true, tweet: row });
-    });
-});
-
 app.post('/api/tweets', (req, res) => {
     const { name, username, avatar, color, verified, time, text, views } = req.body;
     db.run(`INSERT INTO tweets (name, username, avatar, color, verified, time, text, views, likes, replies, rt) 
@@ -197,18 +189,23 @@ app.post('/api/tweets/:id/rt', (req, res) => {
     );
 });
 
+app.delete('/api/tweets/:id', (req, res) => {
+    db.run(`DELETE FROM tweets WHERE id = ?`, [req.params.id], function(err) {
+        if (err) return res.status(500).json({ success: false });
+        res.json({ success: true });
+    });
+});
+
+// ─── THE FIXED ROUTES ───
+
+// Get Single Post + View Counter Fix
 app.get('/api/tweets/:id', (req, res) => {
     const id = req.params.id;
     
-    // 1. Add a view to the database first!
-    db.run(`UPDATE tweets SET views = views + 1 WHERE id = ?`, [id], (updateErr) => {
-        if (updateErr) console.error("Error updating views:", updateErr);
-        
-        // 2. Then fetch the updated tweet to show on the screen
+    // COALESCE turns empty data into 0 so the math actually works!
+    db.run(`UPDATE tweets SET views = COALESCE(views, 0) + 1 WHERE id = ?`, [id], () => {
         db.get(`SELECT * FROM tweets WHERE id = ?`, [id], (err, row) => {
             if (err || !row) return res.status(404).json({ success: false, message: "Not found" });
-            
-            // Parse the JSON data so the frontend can read it
             row.hasLiked = false; 
             row.hasRT = false;
             res.json({ success: true, tweet: row });
@@ -216,26 +213,38 @@ app.get('/api/tweets/:id', (req, res) => {
     });
 });
 
-app.post('/api/tweets/:id/replies', (req, res) => {
-    const { name, username, avatar, color, verified, time, text } = req.body;
+// Missing Route Added: Fetch Replies
+app.get('/api/tweets/:id/replies', (req, res) => {
     const tweetId = req.params.id;
-
-    db.run(`INSERT INTO replies (tweetId, name, username, avatar, color, verified, time, text) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [tweetId, name, username, avatar, color, verified ? 1 : 0, time, text],
-        function(err) {
-            if (err) return res.status(500).json({ success: false, error: err.message });
-            
-            db.run(`UPDATE tweets SET replies = replies + 1 WHERE id = ?`, [tweetId]);
-            res.json({ success: true, replyId: this.lastID });
+    
+    db.all(`SELECT * FROM replies WHERE tweetId = ?`, [tweetId], (err, rows) => {
+        if (err) {
+            // If the table doesn't exist yet, just send an empty array safely
+            return res.json({ success: true, replies: [] });
         }
-    );
+        res.json({ success: true, replies: rows });
+    });
 });
 
-app.delete('/api/tweets/:id', (req, res) => {
-    db.run(`DELETE FROM tweets WHERE id = ?`, [req.params.id], function(err) {
-        if (err) return res.status(500).json({ success: false });
-        res.json({ success: true });
+// Auto-Create Replies Table + Sync Counters
+app.post('/api/tweets/:id/replies', (req, res) => {
+    const tweetId = req.params.id;
+    const { name, username, avatar, color, verified, time, text } = req.body;
+
+    // Auto-create the replies table if it doesn't exist yet
+    db.run(`CREATE TABLE IF NOT EXISTS replies (id INTEGER PRIMARY KEY AUTOINCREMENT, tweetId INTEGER, name TEXT, username TEXT, avatar TEXT, color TEXT, verified BOOLEAN, time TEXT, text TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)`, () => {
+        
+        // 1. Save the actual text to the new replies table
+        db.run(`INSERT INTO replies (tweetId, name, username, avatar, color, verified, time, text) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [tweetId, name, username, avatar, color, verified, time, text],
+            function(err) {
+                if (err) return res.status(500).json({ success: false });
+                
+                // 2. Update the counter on the main post
+                db.run(`UPDATE tweets SET replies = COALESCE(replies, 0) + 1 WHERE id = ?`, [tweetId]);
+                res.json({ success: true });
+            }
+        );
     });
 });
 
